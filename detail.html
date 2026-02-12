@@ -549,6 +549,7 @@ function render() {
             <div style="display:flex;align-items:center;gap:12px">
                 <span class="status-badge ${badgeClass}">${esc(state.replace(/_/g, ' '))}</span>
                 ${!isActive ? `<button class="btn-primary" onclick="rerun()">Rerun</button>` : ''}
+                <a class="btn-primary" href="https://usefulagents.com/workflows/${encodeURIComponent(workflowId)}?run=${currentRunNumber}" target="_blank" style="text-decoration:none;background:var(--bg-card);border:1px solid var(--border-light)">Logs</a>
             </div>
         </div>
 

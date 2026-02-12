@@ -1251,6 +1251,7 @@ function renderWorkflowCard(run) {
             <div class="card-actions">
                 ${!isActive ? `<button class="btn-card btn-rerun" onclick="openRerunModal('${escHtml(run.workflow_id)}', '${escHtml(appName)}', '${escHtml(wf.connection_id || '')}')">Rerun</button>` : ''}
                 <button class="btn-card btn-detail" onclick="window.location.href='/detail?workflow_id=${run.workflow_id}&run=${run.run_number}'">View Details</button>
+                <a class="btn-card btn-detail" href="https://usefulagents.com/workflows/${encodeURIComponent(run.workflow_id)}?run=${run.run_number}" target="_blank" style="text-decoration:none">Logs</a>
                 ${prLink ? `<span style="margin-left:auto">${prLink}</span>` : ''}
             </div>
         </div>
