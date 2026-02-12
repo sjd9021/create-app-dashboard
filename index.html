@@ -390,37 +390,67 @@
             justify-content: space-between;
         }
 
-        /* Card stats grid — 2x2 or 3-col layout */
-        .card-stats-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
+        /* Pipeline funnel on cards */
+        .card-pipeline {
+            display: flex;
+            align-items: center;
+            gap: 0;
             margin-bottom: 14px;
-            padding: 12px;
+            padding: 14px 12px;
             background: var(--bg-secondary);
             border-radius: var(--radius-sm);
+            overflow-x: auto;
         }
-        .card-stat-item {
+        .pipe-stage {
             display: flex;
             flex-direction: column;
-            gap: 2px;
+            align-items: center;
+            gap: 3px;
+            flex: 1;
+            min-width: 0;
         }
-        .card-stat-label {
-            font-size: 10px;
+        .pipe-count {
+            font-size: 18px;
+            font-weight: 800;
+            color: var(--text-primary);
+            line-height: 1;
+        }
+        .pipe-count.green { color: var(--accent-green); }
+        .pipe-count.red { color: var(--accent-red); }
+        .pipe-count.blue { color: var(--accent-blue); }
+        .pipe-count.amber { color: var(--accent-amber); }
+        .pipe-count.dim { color: var(--text-dim); }
+        .pipe-label {
+            font-size: 9px;
             text-transform: uppercase;
             letter-spacing: 0.6px;
             color: var(--text-dim);
             font-weight: 600;
         }
-        .card-stat-value {
-            font-size: 15px;
-            font-weight: 700;
-            color: var(--text-primary);
+        .pipe-arrow {
+            color: var(--text-dim);
+            font-size: 14px;
+            padding: 0 6px;
+            flex-shrink: 0;
+            margin-bottom: 12px;
         }
-        .card-stat-value.green { color: var(--accent-green); }
-        .card-stat-value.red { color: var(--accent-red); }
-        .card-stat-value.blue { color: var(--accent-blue); }
-        .card-stat-value.amber { color: var(--accent-amber); }
+        .pipe-drop {
+            font-size: 9px;
+            color: var(--accent-red);
+            font-weight: 600;
+            opacity: 0.85;
+        }
+        /* Card meta row below pipeline */
+        .card-meta-row {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 14px;
+            font-size: 12px;
+            color: var(--text-dim);
+            flex-wrap: wrap;
+        }
+        .card-meta-row .pr-link { font-size: 12px; }
 
         /* Card footer area */
         .card-footer-row {
@@ -1148,6 +1178,53 @@ function formatDuration(startedAt, completedAt) {
     return '<1m';
 }
 
+function renderPipeline(run, failedActionsArr, newActionsArr, passRate, prLink, duration) {
+    const ep = run.endpoints_discovered || 0;
+    const built = run.actions_built || newActionsArr.length || 0;
+    const passed = run.passed || 0;
+    const total = run.total || 0;
+    const failed = failedActionsArr.length;
+    const hasPr = !!run.pr_number;
+
+    // Color logic
+    const epClass = ep > 0 ? 'blue' : 'dim';
+    const builtClass = built > 0 ? 'green' : (ep > 0 ? 'dim' : 'dim');
+    const testClass = total > 0 ? (passRate >= 70 ? 'green' : passRate >= 40 ? 'amber' : 'red') : 'dim';
+    const prClass = hasPr ? 'green' : 'dim';
+
+    // Drop-off labels
+    const epToBuilt = ep > 0 && built < ep ? `−${ep - built}` : '';
+    const builtToTest = total > 0 && failed > 0 ? `−${failed}` : '';
+
+    return `
+    <div class="card-pipeline">
+        <div class="pipe-stage">
+            <span class="pipe-count ${epClass}">${ep || '—'}</span>
+            <span class="pipe-label">Endpoints</span>
+        </div>
+        <div class="pipe-arrow">→${epToBuilt ? `<div class="pipe-drop">${epToBuilt}</div>` : ''}</div>
+        <div class="pipe-stage">
+            <span class="pipe-count ${builtClass}">${built || '—'}</span>
+            <span class="pipe-label">Built</span>
+        </div>
+        <div class="pipe-arrow">→${builtToTest ? `<div class="pipe-drop">${builtToTest}</div>` : ''}</div>
+        <div class="pipe-stage">
+            <span class="pipe-count ${testClass}">${total > 0 ? `${passed}/${total}` : '—'}</span>
+            <span class="pipe-label">Passed</span>
+        </div>
+        <div class="pipe-arrow">→</div>
+        <div class="pipe-stage">
+            <span class="pipe-count ${prClass}">${hasPr ? '✓' : '—'}</span>
+            <span class="pipe-label">PR</span>
+        </div>
+    </div>
+    <div class="card-meta-row">
+        ${prLink ? `${prLink} ·` : ''}
+        ${duration ? `<span>${duration}</span> ·` : ''}
+        ${failed > 0 ? `<span style="color:var(--accent-red)">${failed} failed</span>` : ''}
+    </div>`;
+}
+
 function renderWorkflowCard(run) {
     const wf = workflows.find(w => w.workflow_id === run.workflow_id) || {};
     const appName = wf.app_name || 'Unknown';
@@ -1232,32 +1309,7 @@ function renderWorkflowCard(run) {
                 </div>
             </div>` : ''}
 
-            <div class="card-stats-grid">
-                <div class="card-stat-item">
-                    <span class="card-stat-label">Endpoints</span>
-                    <span class="card-stat-value blue">${run.endpoints_discovered || '—'}</span>
-                </div>
-                <div class="card-stat-item">
-                    <span class="card-stat-label">Actions Built</span>
-                    <span class="card-stat-value green">${run.actions_built || newActionsArr.length || '—'}</span>
-                </div>
-                <div class="card-stat-item">
-                    <span class="card-stat-label">Tests</span>
-                    <span class="card-stat-value ${run.total > 0 ? (passRate >= 70 ? 'green' : passRate >= 40 ? 'amber' : 'red') : ''}">${run.total > 0 ? `${run.passed}/${run.total}` : '—'}</span>
-                </div>
-                <div class="card-stat-item">
-                    <span class="card-stat-label">Failed</span>
-                    <span class="card-stat-value ${failedActionsArr.length > 0 ? 'red' : ''}">${failedActionsArr.length || '0'}</span>
-                </div>
-                <div class="card-stat-item">
-                    <span class="card-stat-label">PR</span>
-                    <span class="card-stat-value">${prLink || '—'}</span>
-                </div>
-                <div class="card-stat-item">
-                    <span class="card-stat-label">Duration</span>
-                    <span class="card-stat-value">${duration || '—'}</span>
-                </div>
-            </div>
+            ${renderPipeline(run, failedActionsArr, newActionsArr, passRate, prLink, duration)}
 
             ${failedChipsHtml}
             ${failureSummaryHtml}
