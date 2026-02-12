@@ -344,7 +344,7 @@ async function init() {
 
     // First get all runs for this workflow from Supabase
     try {
-        const configResp = await fetch('/api/config');
+        const configResp = await fetch('/api/config.js');
         const config = await configResp.json();
         const sbUrl = config.supabaseUrl;
         const sbKey = config.supabaseAnonKey;
@@ -364,7 +364,7 @@ async function init() {
 async function loadRunDetail(runNumber) {
     currentRunNumber = runNumber;
     try {
-        const resp = await fetch('/api/get-detail', {
+        const resp = await fetch('/api/get-detail.js', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ workflow_id: workflowId, run_number: runNumber })
@@ -608,7 +608,7 @@ function getPipelineStages(state, runLog, data) {
 async function rerun() {
     const appName = detailData.toolkit_name;
     try {
-        const resp = await fetch('/api/retry', {
+        const resp = await fetch('/api/retry.js', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ app_name: appName, workflow_id: workflowId })

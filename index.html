@@ -823,7 +823,7 @@ let pollInterval = null;
 // --- Init ---
 async function init() {
     try {
-        const configResp = await fetch('/api/config');
+        const configResp = await fetch('/api/config.js');
         const config = await configResp.json();
         supabaseUrl = config.supabaseUrl;
         supabaseKey = config.supabaseAnonKey;
@@ -1253,7 +1253,7 @@ async function submitTrigger() {
     btn.innerHTML = '<span class="spinner"></span> Running...';
 
     try {
-        const endpoint = rerunWorkflowId ? '/api/retry' : '/api/trigger';
+        const endpoint = rerunWorkflowId ? '/api/retry.js' : '/api/trigger.js';
         const body = rerunWorkflowId
             ? { app_name: appName, workflow_id: rerunWorkflowId, connection_id: connectionId || undefined, environment: env }
             : { app_name: appName, connection_id: connectionId || undefined, environment: env, finder_instructions: finderInstructions || undefined, test_all_actions: testAll || undefined };
@@ -1323,7 +1323,7 @@ async function updateMaxConcurrent(value) {
     try {
         const v = parseInt(value);
         if (v < 1 || v > 20) return;
-        const resp = await fetch('/api/update-config', {
+        const resp = await fetch('/api/update-config.js', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ key: 'max_concurrent', value: v })
