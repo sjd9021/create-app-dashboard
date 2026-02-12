@@ -410,7 +410,7 @@
             min-width: 0;
         }
         .pipe-count {
-            font-size: 18px;
+            font-size: 16px;
             font-weight: 800;
             color: var(--text-primary);
             line-height: 1;
@@ -429,8 +429,8 @@
         }
         .pipe-arrow {
             color: var(--text-dim);
-            font-size: 14px;
-            padding: 0 6px;
+            font-size: 12px;
+            padding: 0 4px;
             flex-shrink: 0;
             margin-bottom: 12px;
         }
@@ -798,17 +798,40 @@
         }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* Failure summary box */
+        /* Failure summary collapsible */
+        .failure-summary-toggle {
+            margin-top: 8px;
+        }
+        .failure-summary-toggle summary {
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--accent-red);
+            padding: 6px 0;
+            list-style: none;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .failure-summary-toggle summary::-webkit-details-marker { display: none; }
+        .failure-summary-toggle summary::before {
+            content: '▸';
+            font-size: 10px;
+            transition: transform 0.15s;
+        }
+        .failure-summary-toggle[open] summary::before { transform: rotate(90deg); }
         .failure-summary-box {
             background: var(--accent-red-muted);
             border: 1px solid rgba(239,68,68,0.25);
             border-radius: var(--radius-sm);
             padding: 8px 12px;
-            margin-top: 8px;
-            font-size: 12px;
-            color: var(--accent-red);
+            margin-top: 4px;
+            font-size: 11px;
+            color: var(--text-secondary);
             line-height: 1.4;
             word-break: break-word;
+            max-height: 200px;
+            overflow-y: auto;
         }
 
         /* Failed actions chip list */
@@ -1186,14 +1209,19 @@ function renderPipeline(run, failedActionsArr, newActionsArr, passRate, prLink, 
     const failed = failedActionsArr.length;
     const hasPr = !!run.pr_number;
 
+    // Curl tested = total actions that went through testing (passed + failed)
+    const curlTested = total > 0 ? total : (built > 0 ? built : 0);
+
     // Color logic
     const epClass = ep > 0 ? 'blue' : 'dim';
+    const curlClass = curlTested > 0 ? 'blue' : 'dim';
     const builtClass = built > 0 ? 'green' : (ep > 0 ? 'dim' : 'dim');
     const testClass = total > 0 ? (passRate >= 70 ? 'green' : passRate >= 40 ? 'amber' : 'red') : 'dim';
     const prClass = hasPr ? 'green' : 'dim';
 
     // Drop-off labels
-    const epToBuilt = ep > 0 && built < ep ? `−${ep - built}` : '';
+    const epToCurl = ep > 0 && curlTested < ep ? `−${ep - curlTested}` : '';
+    const curlToBuilt = curlTested > 0 && built < curlTested ? `−${curlTested - built}` : '';
     const builtToTest = total > 0 && failed > 0 ? `−${failed}` : '';
 
     return `
@@ -1202,7 +1230,12 @@ function renderPipeline(run, failedActionsArr, newActionsArr, passRate, prLink, 
             <span class="pipe-count ${epClass}">${ep || '—'}</span>
             <span class="pipe-label">Endpoints</span>
         </div>
-        <div class="pipe-arrow">→${epToBuilt ? `<div class="pipe-drop">${epToBuilt}</div>` : ''}</div>
+        <div class="pipe-arrow">→${epToCurl ? `<div class="pipe-drop">${epToCurl}</div>` : ''}</div>
+        <div class="pipe-stage">
+            <span class="pipe-count ${curlClass}">${curlTested || '—'}</span>
+            <span class="pipe-label">Curl</span>
+        </div>
+        <div class="pipe-arrow">→${curlToBuilt ? `<div class="pipe-drop">${curlToBuilt}</div>` : ''}</div>
         <div class="pipe-stage">
             <span class="pipe-count ${builtClass}">${built || '—'}</span>
             <span class="pipe-label">Built</span>
@@ -1278,10 +1311,13 @@ function renderWorkflowCard(run) {
         failedChipsHtml = `<div class="failed-actions-chips">${chips}${more}</div>`;
     }
 
-    // Failure summary (trigger errors, API errors, etc.)
+    // Failure summary (trigger errors, API errors, etc.) — collapsible
     let failureSummaryHtml = '';
     if (run.failure_summary && !isActive) {
-        failureSummaryHtml = `<div class="failure-summary-box">${escHtml(run.failure_summary)}</div>`;
+        failureSummaryHtml = `<details class="failure-summary-toggle">
+            <summary>Failure Analysis</summary>
+            <div class="failure-summary-box">${escHtml(run.failure_summary)}</div>
+        </details>`;
     }
 
     return `
