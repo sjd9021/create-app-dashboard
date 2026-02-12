@@ -76,6 +76,20 @@ export default async function handler(req, res) {
             });
         }
 
+        // Insert ca_workflows record if API returned a new workflow_id
+        if (apiResult.workflow_id !== workflow_id) {
+            await fetch(`${SUPABASE_URL}/rest/v1/ca_workflows`, {
+                method: 'POST',
+                headers: sbHeaders,
+                body: JSON.stringify({
+                    workflow_id: apiResult.workflow_id,
+                    app_name: app_name,
+                    connection_id: connection_id || null,
+                    environment: normalizedEnv
+                })
+            });
+        }
+
         // Get current max run_number for this workflow
         const runsResp = await fetch(
             `${SUPABASE_URL}/rest/v1/ca_workflow_runs?workflow_id=eq.${workflow_id}&select=run_number&order=run_number.desc&limit=1`,

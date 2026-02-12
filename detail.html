@@ -386,9 +386,9 @@ function render() {
 
     const appName = d.toolkit_name || 'Unknown';
     const state = (d.execution_state || 'PENDING').toUpperCase();
-    const isActive = state === 'STARTED' || state === 'PENDING';
-    const isSucc = state === 'SUCCESS' || state === 'SUCCESS_NOT_TESTABLE';
-    const isFail = !isActive && !isSucc;
+    const isActive = ['STARTED', 'PENDING'].includes(state);
+    const isSucc = ['SUCCESS', 'SUCCESS_NOT_TESTABLE', 'COMPLETED'].includes(state);
+    const isFail = ['FAILED', 'FAILED_AUTH_ISSUE', 'INFRA_EXECUTION_FAILED', 'INFRA_INITIATION_FAILED', 'TIMED_OUT', 'ABORTED'].includes(state);
     const badgeClass = isActive ? 'active' : isSucc ? 'success' : isFail ? 'failed' : 'pending';
 
     document.getElementById('headerTitle').textContent = `${appName} — Run #${d.run_number || currentRunNumber}`;
@@ -485,7 +485,7 @@ function render() {
         <div class="section">
             <h3>Pull Request</h3>
             <div class="pr-box">
-                <a href="${prUrl}" target="_blank">PR #${d.pr_number}</a>
+                <a href="${esc(prUrl)}" target="_blank">PR #${d.pr_number}</a>
                 <span class="pr-state-badge">${prState}</span>
             </div>
         </div>`;
@@ -626,7 +626,7 @@ async function rerun() {
 
 function esc(str) {
     if (!str) return '';
-    return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#x27;');
 }
 
 init();

@@ -10,18 +10,24 @@ const sbHeaders = {
 };
 
 async function sbSelect(table, filters = '') {
-    const url = `${SUPABASE_URL}/rest/v1/${table}?select=*${filters ? '&' + filters : ''}`;
+    const hasSelect = filters.includes('select=');
+    const url = `${SUPABASE_URL}/rest/v1/${table}?${hasSelect ? '' : 'select=*&'}${filters}`;
     const resp = await fetch(url, { headers: sbHeaders });
     return resp.json();
 }
 
 async function sbInsert(table, data) {
     const url = `${SUPABASE_URL}/rest/v1/${table}`;
-    await fetch(url, {
+    const resp = await fetch(url, {
         method: 'POST',
         headers: sbHeaders,
         body: JSON.stringify(data)
     });
+    if (!resp.ok) {
+        const err = await resp.text();
+        console.error(`sbInsert ${table} failed:`, err);
+        throw new Error(`Insert into ${table} failed: ${err}`);
+    }
 }
 
 export default async function handler(req, res) {

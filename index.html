@@ -845,7 +845,8 @@ async function init() {
 
 // --- Supabase queries ---
 async function sbQuery(table, params = '') {
-    const url = `${supabaseUrl}/rest/v1/${table}?select=*${params ? '&' + params : ''}`;
+    const hasSelect = params.includes('select=');
+    const url = `${supabaseUrl}/rest/v1/${table}?${hasSelect ? '' : 'select=*&'}${params}`;
     const resp = await fetch(url, {
         headers: { 'apikey': supabaseKey, 'Authorization': `Bearer ${supabaseKey}` }
     });
@@ -905,7 +906,7 @@ function updateStats() {
 }
 
 function isSuccess(state) {
-    return ['SUCCESS', 'SUCCESS_NOT_TESTABLE'].includes((state || '').toUpperCase());
+    return ['SUCCESS', 'SUCCESS_NOT_TESTABLE', 'COMPLETED'].includes((state || '').toUpperCase());
 }
 
 function isFailed(state) {
@@ -1022,9 +1023,9 @@ function renderWorkflowCard(run) {
     const hasMultipleRuns = allRuns.length > 1;
 
     const prLink = run.pr_url
-        ? `<a class="pr-link" href="${run.pr_url}" target="_blank">PR #${run.pr_number}</a>`
+        ? `<a class="pr-link" href="${escHtml(run.pr_url)}" target="_blank">PR #${run.pr_number}</a>`
         : run.pr_number
-            ? `<a class="pr-link" href="https://github.com/ComposioHQ/mercury/pull/${run.pr_number}" target="_blank">PR #${run.pr_number}</a>`
+            ? `<a class="pr-link" href="https://github.com/ComposioHQ/mercury/pull/${encodeURIComponent(run.pr_number)}" target="_blank">PR #${run.pr_number}</a>`
             : '';
 
     const startedStr = run.started_at
@@ -1080,7 +1081,7 @@ function renderWorkflowCard(run) {
             ${runHistoryHtml}
 
             <div class="card-actions">
-                ${!isActive ? `<button class="btn-card btn-rerun" onclick="openRerunModal('${run.workflow_id}', '${escHtml(appName)}', '${wf.connection_id || ''}')">Rerun</button>` : ''}
+                ${!isActive ? `<button class="btn-card btn-rerun" onclick="openRerunModal('${escHtml(run.workflow_id)}', '${escHtml(appName)}', '${escHtml(wf.connection_id || '')}')">Rerun</button>` : ''}
                 <button class="btn-card btn-detail" onclick="window.location.href='/detail?workflow_id=${run.workflow_id}&run=${run.run_number}'">View Details</button>
             </div>
         </div>
@@ -1219,6 +1220,8 @@ function openTriggerModal(prefillApp) {
     document.getElementById('modalFinderInstructions').value = '';
     document.getElementById('modalTestAll').checked = false;
     document.getElementById('modalEnv').value = document.getElementById('envToggle').value;
+    // Clear rerun state so fresh triggers don't accidentally call /api/retry
+    document.getElementById('modalSubmitBtn').dataset.rerunWorkflowId = '';
 }
 
 function closeTriggerModal() {
@@ -1320,19 +1323,20 @@ async function updateMaxConcurrent(value) {
     try {
         const v = parseInt(value);
         if (v < 1 || v > 20) return;
-        await fetch(`${supabaseUrl}/rest/v1/ca_config?key=eq.max_concurrent`, {
-            method: 'PATCH',
-            headers: {
-                'apikey': supabaseKey,
-                'Authorization': `Bearer ${supabaseKey}`,
-                'Content-Type': 'application/json',
-                'Prefer': 'return=minimal'
-            },
-            body: JSON.stringify({ value: v })
+        const resp = await fetch('/api/update-config', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ key: 'max_concurrent', value: v })
         });
-        showToast(`Max concurrent set to ${v}`, 'info');
+        const result = await resp.json();
+        if (result.success) {
+            showToast(`Max concurrent set to ${v}`, 'info');
+        } else {
+            showToast('Failed to update config: ' + (result.error || 'Unknown'), 'error');
+        }
     } catch (err) {
         console.error('Config update error:', err);
+        showToast('Failed to update config', 'error');
     }
 }
 
@@ -1349,14 +1353,27 @@ function showToast(message, type = 'info') {
 // --- Utility ---
 function escHtml(str) {
     if (!str) return '';
-    return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#x27;');
 }
 
-// --- Keyboard shortcut ---
+// --- Keyboard shortcuts ---
 document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        const modal = document.getElementById('triggerModal');
+        if (modal.classList.contains('show')) {
+            closeTriggerModal();
+        }
+    }
     if (e.key === '/' && !e.target.closest('input, textarea, select')) {
         e.preventDefault();
         document.getElementById('searchInput').focus();
+    }
+});
+
+// Close modal on overlay click
+document.getElementById('triggerModal').addEventListener('click', (e) => {
+    if (e.target.classList.contains('modal-overlay')) {
+        closeTriggerModal();
     }
 });
 
