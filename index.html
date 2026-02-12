@@ -768,6 +768,19 @@
         }
         @keyframes spin { to { transform: rotate(360deg); } }
 
+        /* Failure summary box */
+        .failure-summary-box {
+            background: var(--accent-red-muted);
+            border: 1px solid rgba(239,68,68,0.25);
+            border-radius: var(--radius-sm);
+            padding: 8px 12px;
+            margin-top: 8px;
+            font-size: 12px;
+            color: var(--accent-red);
+            line-height: 1.4;
+            word-break: break-word;
+        }
+
         /* Failed actions chip list */
         .failed-actions-chips {
             display: flex;
@@ -1025,7 +1038,7 @@ function isSuccess(state) {
 }
 
 function isFailed(state) {
-    return ['FAILED', 'FAILED_AUTH_ISSUE', 'INFRA_EXECUTION_FAILED', 'INFRA_INITIATION_FAILED', 'TIMED_OUT', 'ABORTED'].includes((state || '').toUpperCase());
+    return ['FAILED', 'FAILED_AUTH_ISSUE', 'INFRA_EXECUTION_FAILED', 'INFRA_INITIATION_FAILED', 'TIMED_OUT', 'ABORTED', 'TRIGGER_FAILED'].includes((state || '').toUpperCase());
 }
 
 // --- Tabs ---
@@ -1188,6 +1201,12 @@ function renderWorkflowCard(run) {
         failedChipsHtml = `<div class="failed-actions-chips">${chips}${more}</div>`;
     }
 
+    // Failure summary (trigger errors, API errors, etc.)
+    let failureSummaryHtml = '';
+    if (run.failure_summary && !isActive) {
+        failureSummaryHtml = `<div class="failure-summary-box">${escHtml(run.failure_summary)}</div>`;
+    }
+
     return `
     <div class="workflow-card ${stateClass}">
         <div class="card-body">
@@ -1241,6 +1260,7 @@ function renderWorkflowCard(run) {
             </div>
 
             ${failedChipsHtml}
+            ${failureSummaryHtml}
 
             <div class="card-footer-row">
                 <span class="card-timestamp">${startedStr}</span>

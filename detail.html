@@ -368,7 +368,7 @@ async function init() {
         const sbKey = config.supabaseAnonKey;
 
         const runsResp = await fetch(
-            `${sbUrl}/rest/v1/ca_workflow_runs?workflow_id=eq.${encodeURIComponent(workflowId)}&select=run_number,status,execution_state&order=run_number.asc`,
+            `${sbUrl}/rest/v1/ca_workflow_runs?workflow_id=eq.${encodeURIComponent(workflowId)}&select=run_number,status,execution_state,failure_summary&order=run_number.asc`,
             { headers: { 'apikey': sbKey, 'Authorization': `Bearer ${sbKey}` } }
         );
         const runData = await runsResp.json();
@@ -390,6 +390,35 @@ async function loadRunDetail(runNumber) {
             body: JSON.stringify({ workflow_id: workflowId, run_number: runNumber })
         });
         detailData = await resp.json();
+
+        // If API didn't find it (trigger failures aren't in Integrator API), build from Supabase data
+        if (!detailData || !detailData.workflow_id) {
+            const sbRun = allRunNumbers.find(r => r.run_number === runNumber);
+            if (sbRun && sbRun.execution_state === 'TRIGGER_FAILED') {
+                // Fetch full run + workflow data from Supabase
+                const configResp = await fetch('/api/config.js');
+                const config = await configResp.json();
+                const [wfResp, runResp] = await Promise.all([
+                    fetch(`${config.supabaseUrl}/rest/v1/ca_workflows?workflow_id=eq.${encodeURIComponent(workflowId)}&limit=1`,
+                        { headers: { 'apikey': config.supabaseAnonKey, 'Authorization': `Bearer ${config.supabaseAnonKey}` } }),
+                    fetch(`${config.supabaseUrl}/rest/v1/ca_workflow_runs?workflow_id=eq.${encodeURIComponent(workflowId)}&run_number=eq.${runNumber}&limit=1`,
+                        { headers: { 'apikey': config.supabaseAnonKey, 'Authorization': `Bearer ${config.supabaseAnonKey}` } })
+                ]);
+                const [wfData, runData] = await Promise.all([wfResp.json(), runResp.json()]);
+                const wf = Array.isArray(wfData) && wfData[0] ? wfData[0] : {};
+                const run = Array.isArray(runData) && runData[0] ? runData[0] : {};
+                detailData = {
+                    workflow_id: workflowId,
+                    toolkit_name: wf.app_name || 'Unknown',
+                    run_number: runNumber,
+                    execution_state: 'TRIGGER_FAILED',
+                    created_at: run.started_at,
+                    failure_summary: run.failure_summary || '',
+                    run_log: [],
+                    failed_actions: []
+                };
+            }
+        }
         render();
     } catch (err) {
         document.getElementById('content').innerHTML =
@@ -408,7 +437,7 @@ function render() {
     const state = (d.execution_state || 'PENDING').toUpperCase();
     const isActive = ['STARTED', 'PENDING'].includes(state);
     const isSucc = ['SUCCESS', 'SUCCESS_NOT_TESTABLE', 'COMPLETED'].includes(state);
-    const isFail = ['FAILED', 'FAILED_AUTH_ISSUE', 'INFRA_EXECUTION_FAILED', 'INFRA_INITIATION_FAILED', 'TIMED_OUT', 'ABORTED'].includes(state);
+    const isFail = ['FAILED', 'FAILED_AUTH_ISSUE', 'INFRA_EXECUTION_FAILED', 'INFRA_INITIATION_FAILED', 'TIMED_OUT', 'ABORTED', 'TRIGGER_FAILED'].includes(state);
     const badgeClass = isActive ? 'active' : isSucc ? 'success' : isFail ? 'failed' : 'pending';
 
     document.getElementById('headerTitle').textContent = `${appName} — Run #${d.run_number || currentRunNumber}`;
@@ -440,13 +469,15 @@ function render() {
         prUrl = null;
     }
 
-    // Find CurlTester failure summary from run_log
-    let failureSummary = '';
+    // Find failure summary — from detailData directly (trigger failures) or from CurlTester run_log
+    let failureSummary = d.failure_summary || '';
     const runLog = d.run_log || [];
-    for (const entry of runLog) {
-        if ((entry.message || '').startsWith('CurlTester:') && entry.details) {
-            failureSummary = entry.details;
-            break;
+    if (!failureSummary) {
+        for (const entry of runLog) {
+            if ((entry.message || '').startsWith('CurlTester:') && entry.details) {
+                failureSummary = entry.details;
+                break;
+            }
         }
     }
 
@@ -494,9 +525,10 @@ function render() {
     // Failure analysis
     let failureHtml = '';
     if (failureSummary) {
+        const failureLabel = state === 'TRIGGER_FAILED' ? 'Trigger Error' : 'Failure Analysis (CurlTester)';
         failureHtml = `
         <div class="section">
-            <h3>Failure Analysis (CurlTester)</h3>
+            <h3>${failureLabel}</h3>
             <div class="failure-box">${esc(failureSummary)}</div>
         </div>`;
     }
@@ -616,7 +648,7 @@ function getPipelineStages(state, runLog, data) {
     if (data.pr_number) stages[4].status = 'done';
 
     // Terminal state overrides
-    if (['FAILED', 'FAILED_AUTH_ISSUE', 'TIMED_OUT', 'ABORTED', 'INFRA_EXECUTION_FAILED', 'INFRA_INITIATION_FAILED'].includes(state)) {
+    if (['FAILED', 'FAILED_AUTH_ISSUE', 'TIMED_OUT', 'ABORTED', 'INFRA_EXECUTION_FAILED', 'INFRA_INITIATION_FAILED', 'TRIGGER_FAILED'].includes(state)) {
         const lastActive = stages.findLastIndex(s => s.status === 'active');
         if (lastActive >= 0) stages[lastActive].status = 'failed';
     }

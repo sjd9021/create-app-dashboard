@@ -147,9 +147,32 @@ export default async function handler(req, res) {
         console.log('Integrator API response:', JSON.stringify(apiResult, null, 2));
 
         if (!apiResponse.ok || !apiResult.workflow_id) {
+            // Store the failed trigger so it's visible on the dashboard
+            const errorMsg = apiResult.message || apiResult.error || 'No workflow_id returned';
+            const failId = `fail_${Date.now().toString(36)}`;
+            try {
+                await sbInsert('ca_workflows', {
+                    workflow_id: failId,
+                    app_name: app_name,
+                    connection_id: connection_id || null,
+                    environment: normalizedEnv
+                });
+                await sbInsert('ca_workflow_runs', {
+                    workflow_id: failId,
+                    run_number: 1,
+                    status: 'completed',
+                    execution_state: 'TRIGGER_FAILED',
+                    failure_summary: errorMsg,
+                    started_at: new Date().toISOString(),
+                    completed_at: new Date().toISOString()
+                });
+            } catch (dbErr) {
+                console.error('Failed to store trigger failure:', dbErr);
+            }
+
             return res.status(500).json({
                 error: 'Failed to trigger workflow',
-                details: apiResult.message || apiResult.error || 'No workflow_id returned',
+                details: errorMsg,
                 api_response: apiResult,
                 http_status: apiResponse.status
             });

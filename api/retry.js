@@ -68,9 +68,40 @@ export default async function handler(req, res) {
         console.log('Integrator API response:', JSON.stringify(apiResult, null, 2));
 
         if (!apiResponse.ok || !apiResult.workflow_id) {
+            // Store the failed rerun so it's visible on the dashboard
+            const errorMsg = apiResult.message || apiResult.error || 'No workflow_id returned';
+            try {
+                let nextRun = 1;
+                const runsResp = await fetch(
+                    `${SUPABASE_URL}/rest/v1/ca_workflow_runs?workflow_id=eq.${encodeURIComponent(workflow_id)}&select=run_number&order=run_number.desc&limit=1`,
+                    { headers: sbHeaders }
+                );
+                if (runsResp.ok) {
+                    const existingRuns = await runsResp.json();
+                    if (Array.isArray(existingRuns) && existingRuns.length > 0) {
+                        nextRun = (existingRuns[0].run_number || 0) + 1;
+                    }
+                }
+                await fetch(`${SUPABASE_URL}/rest/v1/ca_workflow_runs`, {
+                    method: 'POST',
+                    headers: sbHeaders,
+                    body: JSON.stringify({
+                        workflow_id: workflow_id,
+                        run_number: nextRun,
+                        status: 'completed',
+                        execution_state: 'TRIGGER_FAILED',
+                        failure_summary: errorMsg,
+                        started_at: new Date().toISOString(),
+                        completed_at: new Date().toISOString()
+                    })
+                });
+            } catch (dbErr) {
+                console.error('Failed to store retry failure:', dbErr);
+            }
+
             return res.status(500).json({
                 error: 'Failed to trigger rerun',
-                details: apiResult.message || apiResult.error || 'No workflow_id returned',
+                details: errorMsg,
                 api_response: apiResult,
                 http_status: apiResponse.status
             });
