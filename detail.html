@@ -6,27 +6,32 @@
     <title>Workflow Detail</title>
     <style>
         :root {
-            --bg-primary: #f1f5f9;
-            --bg-card: #ffffff;
-            --bg-header: #0f172a;
-            --border-light: #e2e8f0;
-            --border-medium: #cbd5e1;
-            --text-primary: #0f172a;
-            --text-secondary: #475569;
-            --text-dim: #94a3b8;
+            --bg-primary: #0b1120;
+            --bg-secondary: #111827;
+            --bg-card: #1e293b;
+            --bg-card-hover: #263548;
+            --bg-header: #0b1120;
+            --bg-input: #1e293b;
+            --bg-elevated: #334155;
+            --border-light: #334155;
+            --border-medium: #475569;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-dim: #64748b;
             --text-on-dark: #f8fafc;
             --accent-blue: #3b82f6;
-            --accent-blue-light: #dbeafe;
+            --accent-blue-hover: #2563eb;
+            --accent-blue-muted: rgba(59,130,246,0.15);
             --accent-green: #22c55e;
-            --accent-green-light: #dcfce7;
+            --accent-green-muted: rgba(34,197,94,0.15);
             --accent-amber: #f59e0b;
-            --accent-amber-light: #fef3c7;
+            --accent-amber-muted: rgba(245,158,11,0.15);
             --accent-red: #ef4444;
-            --accent-red-light: #fee2e2;
-            --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
-            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.07);
-            --radius: 10px;
-            --radius-sm: 6px;
+            --accent-red-muted: rgba(239,68,68,0.15);
+            --shadow-sm: 0 1px 2px rgba(0,0,0,0.3);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.4);
+            --radius: 12px;
+            --radius-sm: 8px;
             --gap: 16px;
             --transition: 0.2s ease;
         }
@@ -40,6 +45,7 @@
 
         .header {
             background: var(--bg-header);
+            border-bottom: 1px solid var(--border-light);
             color: var(--text-on-dark);
             padding: 16px 24px;
             display: flex;
@@ -67,13 +73,14 @@
             flex-wrap: wrap;
             gap: 16px;
         }
-        .detail-app-name { font-size: 28px; font-weight: 800; letter-spacing: -0.5px; }
+        .detail-app-name { font-size: 28px; font-weight: 800; letter-spacing: -0.5px; color: var(--text-primary); }
         .detail-meta { font-size: 13px; color: var(--text-dim); margin-top: 4px; }
         .detail-meta code {
-            background: var(--bg-primary);
+            background: var(--bg-elevated);
             padding: 2px 6px;
             border-radius: 3px;
             font-size: 12px;
+            color: var(--text-secondary);
         }
 
         .status-badge {
@@ -83,10 +90,10 @@
             font-weight: 600;
             text-transform: uppercase;
         }
-        .status-badge.active { background: var(--accent-amber-light); color: #92400e; }
-        .status-badge.success { background: var(--accent-green-light); color: #166534; }
-        .status-badge.failed { background: var(--accent-red-light); color: #991b1b; }
-        .status-badge.pending { background: var(--accent-blue-light); color: #1e40af; }
+        .status-badge.active { background: var(--accent-amber-muted); color: var(--accent-amber); }
+        .status-badge.success { background: var(--accent-green-muted); color: var(--accent-green); }
+        .status-badge.failed { background: var(--accent-red-muted); color: var(--accent-red); }
+        .status-badge.pending { background: var(--accent-blue-muted); color: var(--accent-blue); }
 
         /* Run selector */
         .run-selector {
@@ -103,9 +110,10 @@
             font-weight: 500;
             cursor: pointer;
             background: var(--bg-card);
+            color: var(--text-secondary);
             transition: all var(--transition);
         }
-        .run-tab:hover { border-color: var(--accent-blue); }
+        .run-tab:hover { border-color: var(--accent-blue); color: var(--text-primary); }
         .run-tab.active {
             background: var(--accent-blue);
             color: #fff;
@@ -121,6 +129,7 @@
         }
         .detail-stat {
             background: var(--bg-card);
+            border: 1px solid var(--border-light);
             border-radius: var(--radius);
             padding: 16px 20px;
             box-shadow: var(--shadow-sm);
@@ -133,17 +142,18 @@
             font-weight: 600;
             margin-bottom: 4px;
         }
-        .detail-stat-value { font-size: 24px; font-weight: 800; }
+        .detail-stat-value { font-size: 24px; font-weight: 800; color: var(--text-primary); }
 
         /* Pipeline visual */
         .pipeline {
             background: var(--bg-card);
+            border: 1px solid var(--border-light);
             border-radius: var(--radius);
             padding: 20px 24px;
             box-shadow: var(--shadow-sm);
             margin-bottom: 24px;
         }
-        .pipeline h3 { font-size: 14px; font-weight: 700; margin-bottom: 16px; }
+        .pipeline h3 { font-size: 14px; font-weight: 700; margin-bottom: 16px; color: var(--text-primary); }
         .pipeline-stages {
             display: flex;
             gap: 0;
@@ -177,15 +187,16 @@
             flex-shrink: 0;
         }
 
-        /* Test results table */
+        /* Sections */
         .section {
             background: var(--bg-card);
+            border: 1px solid var(--border-light);
             border-radius: var(--radius);
             padding: 20px 24px;
             box-shadow: var(--shadow-sm);
             margin-bottom: 24px;
         }
-        .section h3 { font-size: 14px; font-weight: 700; margin-bottom: 14px; }
+        .section h3 { font-size: 14px; font-weight: 700; margin-bottom: 14px; color: var(--text-primary); }
 
         .data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
         .data-table thead th {
@@ -200,16 +211,17 @@
         }
         .data-table tbody td {
             padding: 8px 12px;
-            border-bottom: 1px solid #f0f0f0;
+            border-bottom: 1px solid var(--border-light);
+            color: var(--text-secondary);
         }
-        .data-table tbody tr:hover { background: #f8fafc; }
+        .data-table tbody tr:hover { background: var(--bg-secondary); }
         .test-pass { color: var(--accent-green); font-weight: 600; }
         .test-fail { color: var(--accent-red); font-weight: 600; }
 
         /* Failure analysis */
         .failure-box {
-            background: var(--accent-red-light);
-            border: 1px solid #fecaca;
+            background: var(--accent-red-muted);
+            border: 1px solid rgba(239,68,68,0.3);
             border-radius: var(--radius-sm);
             padding: 14px 18px;
             font-size: 13px;
@@ -217,6 +229,7 @@
             line-height: 1.6;
             max-height: 400px;
             overflow-y: auto;
+            color: var(--text-primary);
         }
 
         /* Run log */
@@ -244,13 +257,15 @@
         .log-details {
             margin-top: 4px;
             padding: 8px 12px;
-            background: var(--bg-primary);
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-light);
             border-radius: var(--radius-sm);
             font-size: 11px;
             white-space: pre-wrap;
             max-height: 200px;
             overflow-y: auto;
             display: none;
+            color: var(--text-secondary);
         }
         .log-details.show { display: block; }
         .log-toggle {
@@ -259,6 +274,7 @@
             font-size: 11px;
             margin-left: 8px;
         }
+        .log-toggle:hover { text-decoration: underline; }
 
         /* PR section */
         .pr-box {
@@ -266,7 +282,7 @@
             align-items: center;
             gap: 16px;
             padding: 14px 18px;
-            background: var(--accent-blue-light);
+            background: var(--accent-blue-muted);
             border-radius: var(--radius-sm);
         }
         .pr-box a {
@@ -280,7 +296,7 @@
             border-radius: 10px;
             font-size: 11px;
             font-weight: 600;
-            background: #fff;
+            background: var(--bg-elevated);
             color: var(--text-secondary);
         }
 
@@ -293,8 +309,9 @@
             font-size: 13px;
             font-weight: 600;
             cursor: pointer;
+            transition: background var(--transition);
         }
-        .btn-primary:hover { background: #2563eb; }
+        .btn-primary:hover { background: var(--accent-blue-hover); }
 
         .loading {
             text-align: center;
@@ -333,6 +350,7 @@
 const params = new URLSearchParams(window.location.search);
 const workflowId = params.get('workflow_id');
 let currentRunNumber = parseInt(params.get('run') || '1', 10);
+if (isNaN(currentRunNumber) || currentRunNumber < 1) currentRunNumber = 1;
 let detailData = null;
 let allRunNumbers = [];
 
@@ -350,12 +368,14 @@ async function init() {
         const sbKey = config.supabaseAnonKey;
 
         const runsResp = await fetch(
-            `${sbUrl}/rest/v1/ca_workflow_runs?workflow_id=eq.${workflowId}&select=run_number,status,execution_state&order=run_number.asc`,
+            `${sbUrl}/rest/v1/ca_workflow_runs?workflow_id=eq.${encodeURIComponent(workflowId)}&select=run_number,status,execution_state&order=run_number.asc`,
             { headers: { 'apikey': sbKey, 'Authorization': `Bearer ${sbKey}` } }
         );
-        allRunNumbers = await runsResp.json();
+        const runData = await runsResp.json();
+        allRunNumbers = Array.isArray(runData) ? runData : [];
     } catch (e) {
         console.error('Error fetching runs:', e);
+        allRunNumbers = [];
     }
 
     await loadRunDetail(currentRunNumber);
@@ -373,7 +393,7 @@ async function loadRunDetail(runNumber) {
         render();
     } catch (err) {
         document.getElementById('content').innerHTML =
-            `<div class="loading">Error loading: ${err.message}</div>`;
+            `<div class="loading">Error loading: ${esc(err.message)}</div>`;
     }
 }
 
@@ -415,6 +435,10 @@ function render() {
     if (!prUrl && d.pr_number) {
         prUrl = `https://github.com/ComposioHQ/mercury/pull/${d.pr_number}`;
     }
+    // Validate URL protocol to prevent javascript: XSS
+    if (prUrl && !prUrl.startsWith('https://') && !prUrl.startsWith('http://')) {
+        prUrl = null;
+    }
 
     // Find CurlTester failure summary from run_log
     let failureSummary = '';
@@ -446,7 +470,7 @@ function render() {
         const rows = entries.map(([name, r]) => {
             const cls = r.success ? 'test-pass' : 'test-fail';
             const status = r.success ? 'PASSED' : 'FAILED';
-            return `<tr><td style="font-weight:500">${esc(name)}</td><td class="${cls}">${status}</td><td>${esc(r.response_summary || r.result_summary || '')}</td></tr>`;
+            return `<tr><td style="font-weight:500;color:var(--text-primary)">${esc(name)}</td><td class="${cls}">${status}</td><td>${esc(r.response_summary || r.result_summary || '')}</td></tr>`;
         }).join('');
         testTableHtml = `
         <div class="section">
@@ -486,7 +510,7 @@ function render() {
             <h3>Pull Request</h3>
             <div class="pr-box">
                 <a href="${esc(prUrl)}" target="_blank">PR #${d.pr_number}</a>
-                <span class="pr-state-badge">${prState}</span>
+                <span class="pr-state-badge">${esc(prState)}</span>
             </div>
         </div>`;
     }
@@ -494,7 +518,7 @@ function render() {
     // Run log
     let logHtml = '';
     if (runLog.length > 0) {
-        const entries = runLog.map(e => {
+        const logEntries = runLog.map(e => {
             const level = (e.log_level || 'INFO').toLowerCase();
             const time = e.timestamp ? new Date(e.timestamp).toLocaleTimeString() : '';
             const hasDetails = e.details && e.details.length > 0;
@@ -509,7 +533,7 @@ function render() {
         logHtml = `
         <div class="section">
             <h3>Run Log (${runLog.length} entries)</h3>
-            <ul class="log-timeline">${entries}</ul>
+            <ul class="log-timeline">${logEntries}</ul>
         </div>`;
     }
 
@@ -518,12 +542,12 @@ function render() {
             <div>
                 <div class="detail-app-name">${esc(appName)}</div>
                 <div class="detail-meta">
-                    Workflow <code>${d.workflow_id}</code> · Run #${d.run_number || currentRunNumber}
+                    Workflow <code>${esc(d.workflow_id)}</code> · Run #${d.run_number || currentRunNumber}
                     ${d.created_at ? ` · Started ${new Date(d.created_at).toLocaleString()}` : ''}
                 </div>
             </div>
             <div style="display:flex;align-items:center;gap:12px">
-                <span class="status-badge ${badgeClass}">${state.replace(/_/g, ' ')}</span>
+                <span class="status-badge ${badgeClass}">${esc(state.replace(/_/g, ' '))}</span>
                 ${!isActive ? `<button class="btn-primary" onclick="rerun()">Rerun</button>` : ''}
             </div>
         </div>
@@ -615,7 +639,7 @@ async function rerun() {
         });
         const result = await resp.json();
         if (result.success) {
-            window.location.href = `/detail?workflow_id=${result.workflow_id}&run=${result.run_number}`;
+            window.location.href = `/detail?workflow_id=${encodeURIComponent(result.workflow_id)}&run=${result.run_number}`;
         } else {
             alert('Rerun failed: ' + (result.error || result.details || 'Unknown error'));
         }

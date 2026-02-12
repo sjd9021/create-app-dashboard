@@ -13,7 +13,12 @@ async function sbSelect(table, filters = '') {
     const hasSelect = filters.includes('select=');
     const url = `${SUPABASE_URL}/rest/v1/${table}?${hasSelect ? '' : 'select=*&'}${filters}`;
     const resp = await fetch(url, { headers: sbHeaders });
-    return resp.json();
+    if (!resp.ok) {
+        console.error(`sbSelect ${table} failed:`, resp.status, await resp.text());
+        return [];
+    }
+    const data = await resp.json();
+    return Array.isArray(data) ? data : [];
 }
 
 async function sbInsert(table, data) {

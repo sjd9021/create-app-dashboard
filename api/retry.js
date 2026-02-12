@@ -78,7 +78,7 @@ export default async function handler(req, res) {
 
         // Insert ca_workflows record if API returned a new workflow_id
         if (apiResult.workflow_id !== workflow_id) {
-            await fetch(`${SUPABASE_URL}/rest/v1/ca_workflows`, {
+            const wfResp = await fetch(`${SUPABASE_URL}/rest/v1/ca_workflows`, {
                 method: 'POST',
                 headers: sbHeaders,
                 body: JSON.stringify({
@@ -88,18 +88,30 @@ export default async function handler(req, res) {
                     environment: normalizedEnv
                 })
             });
+            if (!wfResp.ok) {
+                console.error('Failed to insert ca_workflows:', await wfResp.text());
+            }
         }
 
         // Get current max run_number for this workflow
-        const runsResp = await fetch(
-            `${SUPABASE_URL}/rest/v1/ca_workflow_runs?workflow_id=eq.${workflow_id}&select=run_number&order=run_number.desc&limit=1`,
-            { headers: sbHeaders }
-        );
-        const runs = await runsResp.json();
-        const newRunNumber = apiResult.run_number || ((runs[0]?.run_number || 0) + 1);
+        let newRunNumber = apiResult.run_number || 1;
+        try {
+            const runsResp = await fetch(
+                `${SUPABASE_URL}/rest/v1/ca_workflow_runs?workflow_id=eq.${encodeURIComponent(workflow_id)}&select=run_number&order=run_number.desc&limit=1`,
+                { headers: sbHeaders }
+            );
+            if (runsResp.ok) {
+                const runs = await runsResp.json();
+                if (Array.isArray(runs) && runs.length > 0) {
+                    newRunNumber = apiResult.run_number || ((runs[0].run_number || 0) + 1);
+                }
+            }
+        } catch (e) {
+            console.error('Failed to fetch run numbers:', e);
+        }
 
         // Insert new run
-        await fetch(`${SUPABASE_URL}/rest/v1/ca_workflow_runs`, {
+        const runResp = await fetch(`${SUPABASE_URL}/rest/v1/ca_workflow_runs`, {
             method: 'POST',
             headers: sbHeaders,
             body: JSON.stringify({
@@ -110,6 +122,9 @@ export default async function handler(req, res) {
                 started_at: new Date().toISOString()
             })
         });
+        if (!runResp.ok) {
+            console.error('Failed to insert ca_workflow_runs:', await runResp.text());
+        }
 
         return res.status(200).json({
             success: true,

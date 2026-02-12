@@ -7,30 +7,37 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1" integrity="sha384-jb8JQMbMoBUzgWatfe6COACi2ljcDdZQ2OxczGA3bGNeWe+6DChMTBJemed7ZnvJ" crossorigin="anonymous"></script>
     <style>
         :root {
-            --bg-primary: #f1f5f9;
-            --bg-card: #ffffff;
-            --bg-header: #0f172a;
-            --bg-header-accent: #1e293b;
-            --border-light: #e2e8f0;
-            --border-medium: #cbd5e1;
-            --text-primary: #0f172a;
-            --text-secondary: #475569;
-            --text-dim: #94a3b8;
+            --bg-primary: #0b1120;
+            --bg-secondary: #111827;
+            --bg-card: #1e293b;
+            --bg-card-hover: #263548;
+            --bg-header: #0b1120;
+            --bg-input: #1e293b;
+            --bg-elevated: #334155;
+            --border-subtle: #1e293b;
+            --border-light: #334155;
+            --border-medium: #475569;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-dim: #64748b;
             --text-on-dark: #f8fafc;
             --accent-blue: #3b82f6;
-            --accent-blue-light: #dbeafe;
+            --accent-blue-hover: #2563eb;
+            --accent-blue-muted: rgba(59,130,246,0.15);
             --accent-green: #22c55e;
-            --accent-green-light: #dcfce7;
+            --accent-green-muted: rgba(34,197,94,0.15);
             --accent-amber: #f59e0b;
-            --accent-amber-light: #fef3c7;
+            --accent-amber-muted: rgba(245,158,11,0.15);
             --accent-red: #ef4444;
-            --accent-red-light: #fee2e2;
-            --accent-purple: #8b5cf6;
-            --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
-            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.07), 0 2px 4px -2px rgba(0,0,0,0.05);
-            --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.08), 0 4px 6px -4px rgba(0,0,0,0.04);
-            --radius: 10px;
-            --radius-sm: 6px;
+            --accent-red-muted: rgba(239,68,68,0.15);
+            --accent-purple: #a78bfa;
+            --accent-purple-muted: rgba(167,139,250,0.15);
+            --shadow-sm: 0 1px 2px rgba(0,0,0,0.3);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.4);
+            --shadow-lg: 0 12px 24px rgba(0,0,0,0.5);
+            --radius: 12px;
+            --radius-sm: 8px;
+            --radius-xs: 4px;
             --gap: 16px;
             --transition: 0.2s ease;
         }
@@ -48,6 +55,7 @@
         /* Header */
         .header {
             background: var(--bg-header);
+            border-bottom: 1px solid var(--border-light);
             color: var(--text-on-dark);
             padding: 16px 24px;
             display: flex;
@@ -56,9 +64,9 @@
             position: sticky;
             top: 0;
             z-index: 100;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            backdrop-filter: blur(12px);
         }
-        .header-left { display: flex; align-items: center; gap: 12px; }
+        .header-left { display: flex; align-items: center; gap: 14px; }
         .header-title {
             font-size: 18px;
             font-weight: 700;
@@ -80,22 +88,13 @@
             50% { opacity: 0.8; box-shadow: 0 0 0 6px rgba(34,197,94,0); }
         }
         .header-right { display: flex; align-items: center; gap: 16px; }
-        .env-toggle {
-            background: var(--bg-header-accent);
-            border: 1px solid rgba(255,255,255,0.1);
-            color: var(--text-on-dark);
-            padding: 6px 12px;
-            border-radius: var(--radius-sm);
-            font-size: 12px;
-            cursor: pointer;
-        }
         .last-updated { font-size: 11px; color: var(--text-dim); }
 
         /* Container */
         .container {
-            max-width: 1440px;
+            max-width: 1480px;
             margin: 0 auto;
-            padding: 20px 24px;
+            padding: 24px;
         }
 
         /* KPI Stats Row */
@@ -103,18 +102,18 @@
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             gap: var(--gap);
-            margin-bottom: 20px;
+            margin-bottom: 24px;
         }
         .stat-card {
             background: var(--bg-card);
             border-radius: var(--radius);
-            padding: 18px 20px;
+            padding: 20px 22px;
             box-shadow: var(--shadow-sm);
             border-left: 3px solid transparent;
             transition: transform var(--transition), box-shadow var(--transition);
         }
         .stat-card:hover {
-            transform: translateY(-1px);
+            transform: translateY(-2px);
             box-shadow: var(--shadow-md);
         }
         .stat-card.running { border-left-color: var(--accent-amber); }
@@ -124,13 +123,13 @@
         .stat-label {
             font-size: 11px;
             text-transform: uppercase;
-            letter-spacing: 0.6px;
+            letter-spacing: 0.8px;
             color: var(--text-dim);
             font-weight: 600;
-            margin-bottom: 4px;
+            margin-bottom: 6px;
         }
         .stat-value {
-            font-size: 32px;
+            font-size: 36px;
             font-weight: 800;
             letter-spacing: -1px;
         }
@@ -145,7 +144,7 @@
             justify-content: space-between;
             align-items: center;
             gap: 12px;
-            margin-bottom: 16px;
+            margin-bottom: 20px;
             flex-wrap: wrap;
         }
         .action-bar-left { display: flex; align-items: center; gap: 12px; }
@@ -160,30 +159,24 @@
             cursor: pointer;
             transition: background var(--transition), transform var(--transition);
         }
-        .btn-primary:hover { background: #2563eb; transform: translateY(-1px); }
-        .btn-secondary {
-            background: var(--bg-card);
-            color: var(--text-primary);
-            border: 1px solid var(--border-light);
-            padding: 8px 14px;
-            border-radius: var(--radius-sm);
-            font-size: 12px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all var(--transition);
-        }
-        .btn-secondary:hover { border-color: var(--border-medium); background: #f8fafc; }
+        .btn-primary:hover { background: var(--accent-blue-hover); transform: translateY(-1px); }
         .concurrency-control {
-            display: flex; align-items: center; gap: 6px;
+            display: flex; align-items: center; gap: 8px;
             font-size: 12px; color: var(--text-secondary);
         }
         .concurrency-control input {
-            width: 48px;
-            padding: 6px 8px;
+            width: 52px;
+            padding: 7px 8px;
             border: 1px solid var(--border-light);
             border-radius: var(--radius-sm);
             font-size: 12px;
             text-align: center;
+            background: var(--bg-input);
+            color: var(--text-primary);
+        }
+        .concurrency-control input:focus {
+            outline: none;
+            border-color: var(--accent-blue);
         }
 
         /* Search + Filter */
@@ -191,40 +184,64 @@
             display: flex;
             align-items: center;
             gap: 12px;
-            margin-bottom: 16px;
+            margin-bottom: 20px;
             flex-wrap: wrap;
         }
         .search-box {
             flex: 1;
-            min-width: 240px;
+            min-width: 260px;
             position: relative;
         }
         .search-box input {
             width: 100%;
-            padding: 10px 14px 10px 36px;
+            padding: 10px 14px 10px 40px;
             border: 1px solid var(--border-light);
             border-radius: var(--radius-sm);
             font-size: 13px;
-            background: var(--bg-card);
-            transition: border-color var(--transition);
+            background: var(--bg-input);
+            color: var(--text-primary);
+            transition: border-color var(--transition), box-shadow var(--transition);
         }
-        .search-box input:focus { outline: none; border-color: var(--accent-blue); }
-        .search-box::before {
-            content: '\u2315';
+        .search-box input::placeholder { color: var(--text-dim); }
+        .search-box input:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
+        }
+        .search-icon {
             position: absolute;
             left: 12px;
             top: 50%;
             transform: translateY(-50%);
-            color: var(--text-dim);
-            font-size: 16px;
+            width: 16px;
+            height: 16px;
+            pointer-events: none;
+        }
+        .search-icon svg {
+            width: 16px;
+            height: 16px;
+            fill: none;
+            stroke: var(--text-dim);
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
         }
         .filter-select {
             padding: 10px 12px;
             border: 1px solid var(--border-light);
             border-radius: var(--radius-sm);
             font-size: 13px;
-            background: var(--bg-card);
+            background: var(--bg-input);
+            color: var(--text-primary);
             cursor: pointer;
+        }
+        .filter-select:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+        }
+        .filter-select option {
+            background: var(--bg-card);
+            color: var(--text-primary);
         }
         .result-count {
             font-size: 12px;
@@ -236,107 +253,126 @@
         .tabs {
             display: flex;
             gap: 0;
-            border-bottom: 2px solid var(--border-light);
-            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-light);
+            margin-bottom: 24px;
             overflow-x: auto;
         }
         .tab {
-            padding: 10px 20px;
+            padding: 12px 20px;
             font-size: 13px;
             font-weight: 600;
-            color: var(--text-secondary);
+            color: var(--text-dim);
             border-bottom: 2px solid transparent;
-            margin-bottom: -2px;
+            margin-bottom: -1px;
             cursor: pointer;
             white-space: nowrap;
             transition: all var(--transition);
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 8px;
         }
-        .tab:hover { color: var(--text-primary); }
+        .tab:hover { color: var(--text-secondary); }
         .tab.active {
             color: var(--accent-blue);
             border-bottom-color: var(--accent-blue);
         }
         .tab-badge {
-            background: var(--bg-primary);
+            background: var(--bg-elevated);
             color: var(--text-secondary);
-            padding: 1px 7px;
+            padding: 2px 8px;
             border-radius: 10px;
             font-size: 11px;
             font-weight: 600;
         }
         .tab.active .tab-badge {
-            background: var(--accent-blue-light);
+            background: var(--accent-blue-muted);
             color: var(--accent-blue);
         }
 
         /* Card Grid */
         .card-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
-            gap: var(--gap);
+            grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+            gap: 18px;
         }
 
-        /* Workflow Card */
+        /* Workflow Card — bigger and more detailed */
         .workflow-card {
             background: var(--bg-card);
             border-radius: var(--radius);
             box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-light);
             border-top: 3px solid var(--border-light);
-            transition: transform var(--transition), box-shadow var(--transition);
+            transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition);
             overflow: hidden;
         }
         .workflow-card:hover {
             transform: translateY(-2px);
-            box-shadow: var(--shadow-lg);
+            box-shadow: var(--shadow-md);
+            border-color: var(--border-medium);
         }
         .workflow-card.state-active { border-top-color: var(--accent-amber); }
         .workflow-card.state-queued { border-top-color: var(--accent-blue); }
         .workflow-card.state-success { border-top-color: var(--accent-green); }
         .workflow-card.state-failed { border-top-color: var(--accent-red); }
 
-        .card-body { padding: 16px 18px; }
+        .card-body { padding: 20px 22px; }
 
         .card-header {
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
-            margin-bottom: 10px;
+            margin-bottom: 14px;
         }
         .card-app-name {
-            font-size: 16px;
+            font-size: 17px;
             font-weight: 700;
             letter-spacing: -0.2px;
+            color: var(--text-primary);
         }
         .card-meta {
-            font-size: 11px;
+            font-size: 12px;
             color: var(--text-dim);
-            margin-top: 2px;
+            margin-top: 3px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
         }
+        .env-pill {
+            display: inline-block;
+            padding: 1px 8px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .env-pill.production { background: var(--accent-green-muted); color: var(--accent-green); }
+        .env-pill.staging { background: var(--accent-amber-muted); color: var(--accent-amber); }
 
         .status-badge {
-            padding: 3px 10px;
+            padding: 4px 12px;
             border-radius: 12px;
             font-size: 11px;
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.3px;
+            white-space: nowrap;
         }
-        .status-badge.active { background: var(--accent-amber-light); color: #92400e; }
-        .status-badge.queued { background: var(--accent-blue-light); color: #1e40af; }
-        .status-badge.success { background: var(--accent-green-light); color: #166534; }
-        .status-badge.failed { background: var(--accent-red-light); color: #991b1b; }
+        .status-badge.active { background: var(--accent-amber-muted); color: var(--accent-amber); }
+        .status-badge.queued { background: var(--accent-blue-muted); color: var(--accent-blue); }
+        .status-badge.success { background: var(--accent-green-muted); color: var(--accent-green); }
+        .status-badge.failed { background: var(--accent-red-muted); color: var(--accent-red); }
 
         /* Progress bar */
-        .progress-section { margin-bottom: 12px; }
+        .progress-section { margin-bottom: 16px; }
         .progress-bar-container {
             height: 6px;
-            background: var(--bg-primary);
+            background: var(--bg-elevated);
             border-radius: 3px;
             overflow: hidden;
-            margin-bottom: 4px;
+            margin-bottom: 6px;
         }
         .progress-bar-fill {
             height: 100%;
@@ -354,63 +390,101 @@
             justify-content: space-between;
         }
 
-        /* Card stats */
-        .card-stats {
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-            margin-bottom: 10px;
-            font-size: 12px;
-            color: var(--text-secondary);
+        /* Card stats grid — 2x2 or 3-col layout */
+        .card-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 14px;
+            padding: 12px;
+            background: var(--bg-secondary);
+            border-radius: var(--radius-sm);
         }
-        .card-stats span { display: flex; align-items: center; gap: 4px; }
-        .card-stats .label { color: var(--text-dim); }
+        .card-stat-item {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .card-stat-label {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            color: var(--text-dim);
+            font-weight: 600;
+        }
+        .card-stat-value {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+        .card-stat-value.green { color: var(--accent-green); }
+        .card-stat-value.red { color: var(--accent-red); }
+        .card-stat-value.blue { color: var(--accent-blue); }
+        .card-stat-value.amber { color: var(--accent-amber); }
 
+        /* Card footer area */
+        .card-footer-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
         .card-timestamp {
             font-size: 11px;
             color: var(--text-dim);
-            margin-bottom: 12px;
         }
+        .card-duration {
+            font-size: 11px;
+            color: var(--text-dim);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .pr-link {
+            font-size: 12px;
+            color: var(--accent-blue);
+            text-decoration: none;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .pr-link:hover { text-decoration: underline; }
 
         /* Card actions */
         .card-actions {
             display: flex;
             gap: 8px;
-            padding-top: 12px;
+            padding-top: 14px;
             border-top: 1px solid var(--border-light);
+            align-items: center;
         }
         .btn-card {
-            padding: 6px 14px;
+            padding: 7px 16px;
             border-radius: var(--radius-sm);
             font-size: 12px;
             font-weight: 500;
             cursor: pointer;
             border: 1px solid var(--border-light);
-            background: var(--bg-card);
+            background: transparent;
             color: var(--text-secondary);
             transition: all var(--transition);
         }
-        .btn-card:hover { background: var(--bg-primary); color: var(--text-primary); }
+        .btn-card:hover { background: var(--bg-elevated); color: var(--text-primary); }
         .btn-card.btn-detail {
             background: var(--accent-blue);
             color: #fff;
             border-color: var(--accent-blue);
         }
-        .btn-card.btn-detail:hover { background: #2563eb; }
+        .btn-card.btn-detail:hover { background: var(--accent-blue-hover); }
         .btn-card.btn-rerun {
             border-color: var(--accent-amber);
             color: var(--accent-amber);
         }
-        .btn-card.btn-rerun:hover { background: var(--accent-amber-light); }
-
-        .pr-link {
-            margin-left: auto;
-            font-size: 12px;
-            color: var(--accent-blue);
-            text-decoration: none;
-            font-weight: 500;
-        }
-        .pr-link:hover { text-decoration: underline; }
+        .btn-card.btn-rerun:hover { background: var(--accent-amber-muted); }
 
         /* Run history toggle */
         .run-history-toggle {
@@ -420,16 +494,17 @@
             margin-bottom: 8px;
             font-weight: 500;
         }
+        .run-history-toggle:hover { text-decoration: underline; }
         .run-history {
             display: none;
-            margin-bottom: 10px;
+            margin-bottom: 12px;
         }
         .run-history.show { display: block; }
         .run-history-item {
             display: flex;
             align-items: center;
             gap: 8px;
-            padding: 4px 0;
+            padding: 5px 0;
             font-size: 11px;
             color: var(--text-secondary);
             cursor: pointer;
@@ -438,6 +513,7 @@
         .run-dot {
             width: 6px; height: 6px;
             border-radius: 50%;
+            flex-shrink: 0;
         }
         .run-dot.success { background: var(--accent-green); }
         .run-dot.failed { background: var(--accent-red); }
@@ -446,14 +522,14 @@
         /* Compact App Card (All Apps tab) */
         .compact-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-            gap: 10px;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 12px;
         }
         .compact-card {
             background: var(--bg-card);
+            border: 1px solid var(--border-light);
             border-radius: var(--radius-sm);
-            padding: 12px 14px;
-            box-shadow: var(--shadow-sm);
+            padding: 14px 16px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -461,38 +537,41 @@
             cursor: pointer;
         }
         .compact-card:hover {
-            box-shadow: var(--shadow-md);
+            background: var(--bg-card-hover);
+            border-color: var(--border-medium);
             transform: translateY(-1px);
         }
-        .compact-app-name { font-size: 13px; font-weight: 600; }
-        .compact-tool-count { font-size: 11px; color: var(--text-dim); }
+        .compact-app-name { font-size: 13px; font-weight: 600; color: var(--text-primary); }
+        .compact-tool-count { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
         .compact-status-dot {
             width: 8px; height: 8px;
             border-radius: 50%;
             background: var(--border-light);
+            flex-shrink: 0;
         }
         .compact-status-dot.has-run { background: var(--accent-green); }
         .compact-status-dot.running { background: var(--accent-amber); }
         .compact-status-dot.failed { background: var(--accent-red); }
         .btn-compact-run {
-            padding: 4px 10px;
+            padding: 5px 12px;
             font-size: 11px;
             font-weight: 600;
             background: var(--accent-blue);
             color: #fff;
             border: none;
-            border-radius: 4px;
+            border-radius: var(--radius-xs);
             cursor: pointer;
+            transition: background var(--transition);
         }
-        .btn-compact-run:hover { background: #2563eb; }
+        .btn-compact-run:hover { background: var(--accent-blue-hover); }
 
         /* Modal */
         .modal-overlay {
             display: none;
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.4);
-            backdrop-filter: blur(4px);
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(6px);
             z-index: 200;
             justify-content: center;
             align-items: center;
@@ -500,10 +579,11 @@
         .modal-overlay.show { display: flex; }
         .modal {
             background: var(--bg-card);
-            border-radius: 12px;
-            width: 480px;
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius);
+            width: 500px;
             max-width: 90vw;
-            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+            box-shadow: var(--shadow-lg);
             overflow: hidden;
         }
         .modal-header {
@@ -511,15 +591,16 @@
             border-bottom: 1px solid var(--border-light);
             font-size: 16px;
             font-weight: 700;
+            color: var(--text-primary);
         }
         .modal-body { padding: 20px 24px; }
-        .modal-field { margin-bottom: 14px; }
+        .modal-field { margin-bottom: 16px; }
         .modal-field label {
             display: block;
             font-size: 12px;
             font-weight: 600;
             color: var(--text-secondary);
-            margin-bottom: 4px;
+            margin-bottom: 6px;
         }
         .modal-field input,
         .modal-field select,
@@ -530,22 +611,35 @@
             border-radius: var(--radius-sm);
             font-size: 13px;
             font-family: inherit;
+            background: var(--bg-input);
+            color: var(--text-primary);
         }
+        .modal-field input::placeholder,
+        .modal-field textarea::placeholder { color: var(--text-dim); }
         .modal-field input:focus,
         .modal-field select:focus,
         .modal-field textarea:focus {
             outline: none;
             border-color: var(--accent-blue);
+            box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
+        }
+        .modal-field select option {
+            background: var(--bg-card);
+            color: var(--text-primary);
         }
         .modal-field textarea { resize: vertical; min-height: 60px; }
         .modal-field .hint {
             font-size: 11px;
             color: var(--text-dim);
-            margin-top: 3px;
+            margin-top: 4px;
         }
         .modal-field-checkbox {
             display: flex; align-items: center; gap: 8px;
-            margin-bottom: 14px;
+            margin-bottom: 16px;
+        }
+        .modal-field-checkbox input[type="checkbox"] {
+            width: 16px; height: 16px;
+            accent-color: var(--accent-blue);
         }
         .modal-field-checkbox label { margin: 0; font-size: 13px; color: var(--text-primary); }
         .modal-footer {
@@ -558,11 +652,14 @@
         .btn-cancel {
             padding: 8px 16px;
             border: 1px solid var(--border-light);
-            background: var(--bg-card);
+            background: transparent;
+            color: var(--text-secondary);
             border-radius: var(--radius-sm);
             font-size: 13px;
             cursor: pointer;
+            transition: all var(--transition);
         }
+        .btn-cancel:hover { background: var(--bg-elevated); color: var(--text-primary); }
 
         /* Pagination */
         .pagination {
@@ -570,21 +667,22 @@
             justify-content: center;
             align-items: center;
             gap: 8px;
-            margin-top: 24px;
+            margin-top: 28px;
             padding: 12px 0;
         }
         .page-btn {
-            padding: 6px 12px;
+            padding: 7px 14px;
             border: 1px solid var(--border-light);
             background: var(--bg-card);
+            color: var(--text-secondary);
             border-radius: var(--radius-sm);
             font-size: 12px;
             cursor: pointer;
             transition: all var(--transition);
         }
-        .page-btn:hover { background: var(--bg-primary); }
+        .page-btn:hover { background: var(--bg-elevated); color: var(--text-primary); }
         .page-btn.active { background: var(--accent-blue); color: #fff; border-color: var(--accent-blue); }
-        .page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+        .page-btn:disabled { opacity: 0.3; cursor: not-allowed; }
         .page-info { font-size: 12px; color: var(--text-dim); }
 
         /* Toast */
@@ -598,13 +696,15 @@
             gap: 8px;
         }
         .toast {
-            background: var(--bg-header);
-            color: var(--text-on-dark);
+            background: var(--bg-card);
+            color: var(--text-primary);
             padding: 12px 18px;
             border-radius: var(--radius-sm);
             font-size: 13px;
             box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border-light);
             animation: toastIn 0.3s ease;
+            max-width: 380px;
         }
         .toast.success { border-left: 3px solid var(--accent-green); }
         .toast.error { border-left: 3px solid var(--accent-red); }
@@ -620,14 +720,14 @@
             padding: 60px 20px;
             color: var(--text-dim);
         }
-        .empty-state h3 { font-size: 16px; margin-bottom: 6px; color: var(--text-secondary); }
+        .empty-state h3 { font-size: 16px; margin-bottom: 8px; color: var(--text-secondary); }
         .empty-state p { font-size: 13px; }
 
         /* Responsive */
         @media (max-width: 768px) {
             .stats-row { grid-template-columns: repeat(2, 1fr); }
             .card-grid { grid-template-columns: 1fr; }
-            .compact-grid { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); }
+            .compact-grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
             .header { flex-direction: column; gap: 8px; }
         }
 
@@ -652,8 +752,9 @@
             font-size: 13px;
             cursor: pointer;
             transition: background var(--transition);
+            color: var(--text-primary);
         }
-        .app-dropdown-item:hover { background: var(--bg-primary); }
+        .app-dropdown-item:hover { background: var(--bg-elevated); }
         .app-dropdown-item .app-slug { color: var(--text-dim); font-size: 11px; }
 
         /* Loading spinner */
@@ -666,6 +767,22 @@
             animation: spin 0.6s linear infinite;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Failed actions chip list */
+        .failed-actions-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            margin-top: 4px;
+        }
+        .failed-chip {
+            background: var(--accent-red-muted);
+            color: var(--accent-red);
+            font-size: 10px;
+            padding: 1px 6px;
+            border-radius: 4px;
+            font-weight: 500;
+        }
     </style>
 </head>
 <body>
@@ -679,10 +796,6 @@
         </div>
     </div>
     <div class="header-right">
-        <select class="env-toggle" id="envToggle">
-            <option value="production">Production</option>
-            <option value="staging">Staging</option>
-        </select>
         <span class="last-updated" id="lastUpdated">Connecting...</span>
     </div>
 </header>
@@ -722,6 +835,7 @@
     <!-- Filter Bar -->
     <div class="filter-bar">
         <div class="search-box">
+            <span class="search-icon"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span>
             <input type="text" id="searchInput" placeholder="Search apps or workflow IDs..." oninput="applyFilters()">
         </div>
         <select class="filter-select" id="statusFilter" onchange="applyFilters()">
@@ -1008,9 +1122,22 @@ function getRunsForWorkflow(workflowId) {
     return runs.filter(r => r.workflow_id === workflowId).sort((a, b) => b.run_number - a.run_number);
 }
 
+function formatDuration(startedAt, completedAt) {
+    if (!startedAt) return '';
+    const start = new Date(startedAt);
+    const end = completedAt ? new Date(completedAt) : new Date();
+    const diffMs = end - start;
+    const mins = Math.floor(diffMs / 60000);
+    const hrs = Math.floor(mins / 60);
+    if (hrs > 0) return `${hrs}h ${mins % 60}m`;
+    if (mins > 0) return `${mins}m`;
+    return '<1m';
+}
+
 function renderWorkflowCard(run) {
     const wf = workflows.find(w => w.workflow_id === run.workflow_id) || {};
     const appName = wf.app_name || 'Unknown';
+    const env = wf.environment || 'production';
     const isActive = run.status === 'active';
     const success = isSuccess(run.execution_state);
     const failed = isFailed(run.execution_state);
@@ -1021,9 +1148,13 @@ function renderWorkflowCard(run) {
     const barClass = passRate >= 70 ? 'good' : passRate >= 40 ? 'warning' : 'bad';
     const allRuns = getRunsForWorkflow(run.workflow_id);
     const hasMultipleRuns = allRuns.length > 1;
+    const duration = formatDuration(run.started_at, run.completed_at);
+    const failedActionsArr = run.failed_actions || [];
+    const newActionsArr = run.new_actions || [];
 
-    const prLink = run.pr_url
-        ? `<a class="pr-link" href="${escHtml(run.pr_url)}" target="_blank">PR #${run.pr_number}</a>`
+    const safePrUrl = run.pr_url && (run.pr_url.startsWith('https://') || run.pr_url.startsWith('http://')) ? run.pr_url : null;
+    const prLink = safePrUrl
+        ? `<a class="pr-link" href="${escHtml(safePrUrl)}" target="_blank">PR #${run.pr_number}</a>`
         : run.pr_number
             ? `<a class="pr-link" href="https://github.com/ComposioHQ/mercury/pull/${encodeURIComponent(run.pr_number)}" target="_blank">PR #${run.pr_number}</a>`
             : '';
@@ -1048,13 +1179,24 @@ function renderWorkflowCard(run) {
             <div class="run-history">${historyItems}</div>`;
     }
 
+    // Failed actions chips (show up to 3)
+    let failedChipsHtml = '';
+    if (failedActionsArr.length > 0 && !isActive) {
+        const chips = failedActionsArr.slice(0, 3).map(a => `<span class="failed-chip">${escHtml(a)}</span>`).join('');
+        const more = failedActionsArr.length > 3 ? `<span class="failed-chip">+${failedActionsArr.length - 3}</span>` : '';
+        failedChipsHtml = `<div class="failed-actions-chips">${chips}${more}</div>`;
+    }
+
     return `
     <div class="workflow-card ${stateClass}">
         <div class="card-body">
             <div class="card-header">
                 <div>
                     <div class="card-app-name">${escHtml(appName)}</div>
-                    <div class="card-meta">Run #${run.run_number} · ${run.workflow_id}</div>
+                    <div class="card-meta">
+                        Run #${run.run_number} · <span style="opacity:0.7">${run.workflow_id.slice(0,8)}</span>
+                        <span class="env-pill ${escHtml(env)}">${escHtml(env)}</span>
+                    </div>
                 </div>
                 <span class="status-badge ${badgeClass}">${badgeText}</span>
             </div>
@@ -1070,19 +1212,45 @@ function renderWorkflowCard(run) {
                 </div>
             </div>` : ''}
 
-            <div class="card-stats">
-                ${run.endpoints_discovered ? `<span><span class="label">Endpoints:</span> ${run.endpoints_discovered}</span>` : ''}
-                ${run.actions_built ? `<span><span class="label">Built:</span> ${run.actions_built}</span>` : ''}
-                ${prLink ? `<span>${prLink}</span>` : ''}
+            <div class="card-stats-grid">
+                <div class="card-stat-item">
+                    <span class="card-stat-label">Endpoints</span>
+                    <span class="card-stat-value blue">${run.endpoints_discovered || '—'}</span>
+                </div>
+                <div class="card-stat-item">
+                    <span class="card-stat-label">Actions Built</span>
+                    <span class="card-stat-value green">${run.actions_built || newActionsArr.length || '—'}</span>
+                </div>
+                <div class="card-stat-item">
+                    <span class="card-stat-label">Tests</span>
+                    <span class="card-stat-value ${run.total > 0 ? (passRate >= 70 ? 'green' : passRate >= 40 ? 'amber' : 'red') : ''}">${run.total > 0 ? `${run.passed}/${run.total}` : '—'}</span>
+                </div>
+                <div class="card-stat-item">
+                    <span class="card-stat-label">Failed</span>
+                    <span class="card-stat-value ${failedActionsArr.length > 0 ? 'red' : ''}">${failedActionsArr.length || '0'}</span>
+                </div>
+                <div class="card-stat-item">
+                    <span class="card-stat-label">PR</span>
+                    <span class="card-stat-value">${prLink || '—'}</span>
+                </div>
+                <div class="card-stat-item">
+                    <span class="card-stat-label">Duration</span>
+                    <span class="card-stat-value">${duration || '—'}</span>
+                </div>
             </div>
 
-            <div class="card-timestamp">${startedStr}</div>
+            ${failedChipsHtml}
+
+            <div class="card-footer-row">
+                <span class="card-timestamp">${startedStr}</span>
+            </div>
 
             ${runHistoryHtml}
 
             <div class="card-actions">
                 ${!isActive ? `<button class="btn-card btn-rerun" onclick="openRerunModal('${escHtml(run.workflow_id)}', '${escHtml(appName)}', '${escHtml(wf.connection_id || '')}')">Rerun</button>` : ''}
                 <button class="btn-card btn-detail" onclick="window.location.href='/detail?workflow_id=${run.workflow_id}&run=${run.run_number}'">View Details</button>
+                ${prLink ? `<span style="margin-left:auto">${prLink}</span>` : ''}
             </div>
         </div>
     </div>`;
@@ -1113,6 +1281,7 @@ function renderAllApps(search) {
     const cards = paged.map(app => {
         const wf = workflows.find(w => w.app_name === app.slug);
         let statusDot = '';
+        let lastRunInfo = '';
         if (wf) {
             const latestRun = runs
                 .filter(r => r.workflow_id === wf.workflow_id)
@@ -1121,13 +1290,14 @@ function renderAllApps(search) {
                 if (latestRun.status === 'active') statusDot = 'running';
                 else if (isSuccess(latestRun.execution_state)) statusDot = 'has-run';
                 else if (isFailed(latestRun.execution_state)) statusDot = 'failed';
+                lastRunInfo = latestRun.total > 0 ? ` · ${latestRun.passed}/${latestRun.total}` : '';
             }
         }
 
         return `<div class="compact-card" onclick="openTriggerModal('${escHtml(app.slug)}')">
             <div>
                 <div class="compact-app-name">${escHtml(app.name || app.slug)}</div>
-                <div class="compact-tool-count">${app.tool_count || 0} tools</div>
+                <div class="compact-tool-count">${app.tool_count || 0} tools${lastRunInfo}</div>
             </div>
             <div style="display:flex;align-items:center;gap:8px">
                 <span class="compact-status-dot ${statusDot}"></span>
@@ -1219,7 +1389,7 @@ function openTriggerModal(prefillApp) {
     document.getElementById('modalConnectionId').value = '';
     document.getElementById('modalFinderInstructions').value = '';
     document.getElementById('modalTestAll').checked = false;
-    document.getElementById('modalEnv').value = document.getElementById('envToggle').value;
+    document.getElementById('modalEnv').value = 'production';
     // Clear rerun state so fresh triggers don't accidentally call /api/retry
     document.getElementById('modalSubmitBtn').dataset.rerunWorkflowId = '';
 }
