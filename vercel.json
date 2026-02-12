@@ -17,24 +17,8 @@
   ],
   "routes": [
     {
-      "src": "/api/config$",
-      "dest": "/api/config.js"
-    },
-    {
-      "src": "/api/trigger$",
-      "dest": "/api/trigger.js"
-    },
-    {
-      "src": "/api/retry$",
-      "dest": "/api/retry.js"
-    },
-    {
-      "src": "/api/get-detail$",
-      "dest": "/api/get-detail.js"
-    },
-    {
-      "src": "/api/update-config$",
-      "dest": "/api/update-config.js"
+      "src": "/api/([^.]+)$",
+      "dest": "/api/$1.js"
     },
     {
       "src": "/api/(.*)",
