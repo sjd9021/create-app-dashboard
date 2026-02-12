@@ -1004,9 +1004,10 @@ async function fetchDashboardData() {
 
 // --- Stats ---
 function updateStats() {
-    const activeRuns = runs.filter(r => r.status === 'active');
-    const completedRuns = runs.filter(r => r.status === 'completed' && isSuccess(r.execution_state));
-    const failedRuns = runs.filter(r => r.status === 'completed' && isFailed(r.execution_state));
+    const latestRuns = getLatestRunsPerWorkflow();
+    const activeRuns = latestRuns.filter(r => r.status === 'active');
+    const completedRuns = latestRuns.filter(r => r.status === 'completed' && isSuccess(r.execution_state));
+    const failedRuns = latestRuns.filter(r => r.status === 'completed' && isFailed(r.execution_state));
 
     document.getElementById('statRunning').textContent = activeRuns.length;
     document.getElementById('statQueued').textContent = queuedItems.length;
