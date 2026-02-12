@@ -1,0 +1,6 @@
+{
+  "name": "create-app-dashboard",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Create App Command Center — trigger, queue, monitor, and rerun Create App workflows"
+}

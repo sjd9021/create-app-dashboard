@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Workflow Detail</title>
+    <style>
+        :root {
+            --bg-primary: #f1f5f9;
+            --bg-card: #ffffff;
+            --bg-header: #0f172a;
+            --border-light: #e2e8f0;
+            --border-medium: #cbd5e1;
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-dim: #94a3b8;
+            --text-on-dark: #f8fafc;
+            --accent-blue: #3b82f6;
+            --accent-blue-light: #dbeafe;
+            --accent-green: #22c55e;
+            --accent-green-light: #dcfce7;
+            --accent-amber: #f59e0b;
+            --accent-amber-light: #fef3c7;
+            --accent-red: #ef4444;
+            --accent-red-light: #fee2e2;
+            --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.07);
+            --radius: 10px;
+            --radius-sm: 6px;
+            --gap: 16px;
+            --transition: 0.2s ease;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.5;
+        }
+
+        .header {
+            background: var(--bg-header);
+            color: var(--text-on-dark);
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header-left { display: flex; align-items: center; gap: 16px; }
+        .back-link {
+            color: var(--text-dim);
+            text-decoration: none;
+            font-size: 13px;
+            transition: color var(--transition);
+        }
+        .back-link:hover { color: var(--text-on-dark); }
+        .header-title { font-size: 18px; font-weight: 700; }
+
+        .container { max-width: 1200px; margin: 0 auto; padding: 24px; }
+
+        /* Detail header */
+        .detail-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+        .detail-app-name { font-size: 28px; font-weight: 800; letter-spacing: -0.5px; }
+        .detail-meta { font-size: 13px; color: var(--text-dim); margin-top: 4px; }
+        .detail-meta code {
+            background: var(--bg-primary);
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 12px;
+        }
+
+        .status-badge {
+            padding: 5px 14px;
+            border-radius: 14px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .status-badge.active { background: var(--accent-amber-light); color: #92400e; }
+        .status-badge.success { background: var(--accent-green-light); color: #166534; }
+        .status-badge.failed { background: var(--accent-red-light); color: #991b1b; }
+        .status-badge.pending { background: var(--accent-blue-light); color: #1e40af; }
+
+        /* Run selector */
+        .run-selector {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+        .run-tab {
+            padding: 6px 14px;
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-sm);
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            background: var(--bg-card);
+            transition: all var(--transition);
+        }
+        .run-tab:hover { border-color: var(--accent-blue); }
+        .run-tab.active {
+            background: var(--accent-blue);
+            color: #fff;
+            border-color: var(--accent-blue);
+        }
+
+        /* Stats cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: var(--gap);
+            margin-bottom: 24px;
+        }
+        .detail-stat {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            padding: 16px 20px;
+            box-shadow: var(--shadow-sm);
+        }
+        .detail-stat-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-dim);
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        .detail-stat-value { font-size: 24px; font-weight: 800; }
+
+        /* Pipeline visual */
+        .pipeline {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            padding: 20px 24px;
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 24px;
+        }
+        .pipeline h3 { font-size: 14px; font-weight: 700; margin-bottom: 16px; }
+        .pipeline-stages {
+            display: flex;
+            gap: 0;
+            align-items: center;
+            overflow-x: auto;
+        }
+        .pipeline-stage {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            min-width: 100px;
+        }
+        .pipeline-dot {
+            width: 28px; height: 28px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 12px;
+            font-weight: 700;
+            color: #fff;
+        }
+        .pipeline-dot.done { background: var(--accent-green); }
+        .pipeline-dot.active { background: var(--accent-amber); animation: pulse 2s infinite; }
+        .pipeline-dot.pending { background: var(--border-medium); }
+        .pipeline-dot.failed { background: var(--accent-red); }
+        .pipeline-label { font-size: 11px; color: var(--text-secondary); text-align: center; }
+        .pipeline-arrow {
+            width: 40px;
+            height: 2px;
+            background: var(--border-light);
+            flex-shrink: 0;
+        }
+
+        /* Test results table */
+        .section {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            padding: 20px 24px;
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 24px;
+        }
+        .section h3 { font-size: 14px; font-weight: 700; margin-bottom: 14px; }
+
+        .data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        .data-table thead th {
+            text-align: left;
+            padding: 8px 12px;
+            border-bottom: 2px solid var(--border-light);
+            color: var(--text-dim);
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .data-table tbody td {
+            padding: 8px 12px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .data-table tbody tr:hover { background: #f8fafc; }
+        .test-pass { color: var(--accent-green); font-weight: 600; }
+        .test-fail { color: var(--accent-red); font-weight: 600; }
+
+        /* Failure analysis */
+        .failure-box {
+            background: var(--accent-red-light);
+            border: 1px solid #fecaca;
+            border-radius: var(--radius-sm);
+            padding: 14px 18px;
+            font-size: 13px;
+            white-space: pre-wrap;
+            line-height: 1.6;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        /* Run log */
+        .log-timeline { list-style: none; }
+        .log-entry {
+            padding: 6px 0 6px 20px;
+            position: relative;
+            font-size: 12px;
+            border-left: 2px solid var(--border-light);
+        }
+        .log-entry::before {
+            content: '';
+            position: absolute;
+            left: -5px;
+            top: 12px;
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            background: var(--border-medium);
+        }
+        .log-entry.info::before { background: var(--accent-blue); }
+        .log-entry.warning::before { background: var(--accent-amber); }
+        .log-entry.error::before { background: var(--accent-red); }
+        .log-time { color: var(--text-dim); font-size: 11px; margin-right: 8px; }
+        .log-message { color: var(--text-primary); }
+        .log-details {
+            margin-top: 4px;
+            padding: 8px 12px;
+            background: var(--bg-primary);
+            border-radius: var(--radius-sm);
+            font-size: 11px;
+            white-space: pre-wrap;
+            max-height: 200px;
+            overflow-y: auto;
+            display: none;
+        }
+        .log-details.show { display: block; }
+        .log-toggle {
+            color: var(--accent-blue);
+            cursor: pointer;
+            font-size: 11px;
+            margin-left: 8px;
+        }
+
+        /* PR section */
+        .pr-box {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 14px 18px;
+            background: var(--accent-blue-light);
+            border-radius: var(--radius-sm);
+        }
+        .pr-box a {
+            color: var(--accent-blue);
+            font-weight: 600;
+            text-decoration: none;
+        }
+        .pr-box a:hover { text-decoration: underline; }
+        .pr-state-badge {
+            padding: 3px 10px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 600;
+            background: #fff;
+            color: var(--text-secondary);
+        }
+
+        .btn-primary {
+            background: var(--accent-blue);
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .btn-primary:hover { background: #2563eb; }
+
+        .loading {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-dim);
+            font-size: 14px;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
+        @media (max-width: 768px) {
+            .detail-header { flex-direction: column; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body>
+
+<header class="header">
+    <div class="header-left">
+        <a href="/" class="back-link">&larr; Dashboard</a>
+        <div class="header-title" id="headerTitle">Workflow Detail</div>
+    </div>
+</header>
+
+<div class="container">
+    <div id="content">
+        <div class="loading">Loading workflow details...</div>
+    </div>
+</div>
+
+<script>
+const params = new URLSearchParams(window.location.search);
+const workflowId = params.get('workflow_id');
+let currentRunNumber = parseInt(params.get('run') || '1', 10);
+let detailData = null;
+let allRunNumbers = [];
+
+async function init() {
+    if (!workflowId) {
+        document.getElementById('content').innerHTML = '<div class="loading">No workflow_id provided.</div>';
+        return;
+    }
+
+    // First get all runs for this workflow from Supabase
+    try {
+        const configResp = await fetch('/api/config');
+        const config = await configResp.json();
+        const sbUrl = config.supabaseUrl;
+        const sbKey = config.supabaseAnonKey;
+
+        const runsResp = await fetch(
+            `${sbUrl}/rest/v1/ca_workflow_runs?workflow_id=eq.${workflowId}&select=run_number,status,execution_state&order=run_number.asc`,
+            { headers: { 'apikey': sbKey, 'Authorization': `Bearer ${sbKey}` } }
+        );
+        allRunNumbers = await runsResp.json();
+    } catch (e) {
+        console.error('Error fetching runs:', e);
+    }
+
+    await loadRunDetail(currentRunNumber);
+}
+
+async function loadRunDetail(runNumber) {
+    currentRunNumber = runNumber;
+    try {
+        const resp = await fetch('/api/get-detail', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ workflow_id: workflowId, run_number: runNumber })
+        });
+        detailData = await resp.json();
+        render();
+    } catch (err) {
+        document.getElementById('content').innerHTML =
+            `<div class="loading">Error loading: ${err.message}</div>`;
+    }
+}
+
+function render() {
+    const d = detailData;
+    if (!d || !d.workflow_id) {
+        document.getElementById('content').innerHTML = '<div class="loading">Workflow not found.</div>';
+        return;
+    }
+
+    const appName = d.toolkit_name || 'Unknown';
+    const state = (d.execution_state || 'PENDING').toUpperCase();
+    const isActive = state === 'STARTED' || state === 'PENDING';
+    const isSucc = state === 'SUCCESS' || state === 'SUCCESS_NOT_TESTABLE';
+    const isFail = !isActive && !isSucc;
+    const badgeClass = isActive ? 'active' : isSucc ? 'success' : isFail ? 'failed' : 'pending';
+
+    document.getElementById('headerTitle').textContent = `${appName} — Run #${d.run_number || currentRunNumber}`;
+    document.title = `${appName} — Workflow Detail`;
+
+    // Extract test results from response_json
+    let actionResults = {};
+    let endpointsFound = 0;
+    let newActions = [];
+    let prUrl = null;
+
+    if (d.response_json && !d.response_json._truncated && d.response_json.execution_result) {
+        const er = d.response_json.execution_result;
+        endpointsFound = er.finder_response?.total_found || 0;
+        newActions = er.new_actions || [];
+        actionResults = er.testing_result?.action_results || er.action_results || {};
+        prUrl = d.response_json.pr_url;
+    }
+
+    const failedActions = d.failed_actions || [];
+    const totalActions = Object.keys(actionResults).length;
+    const passedActions = totalActions - failedActions.length;
+
+    if (!prUrl && d.pr_number) {
+        prUrl = `https://github.com/ComposioHQ/mercury/pull/${d.pr_number}`;
+    }
+
+    // Find CurlTester failure summary from run_log
+    let failureSummary = '';
+    const runLog = d.run_log || [];
+    for (const entry of runLog) {
+        if ((entry.message || '').startsWith('CurlTester:') && entry.details) {
+            failureSummary = entry.details;
+            break;
+        }
+    }
+
+    // Determine pipeline stages
+    const stages = getPipelineStages(state, runLog, d);
+
+    // Build run selector
+    const runSelectorHtml = allRunNumbers.length > 1
+        ? `<div class="run-selector">${allRunNumbers.map(r =>
+            `<div class="run-tab ${r.run_number === currentRunNumber ? 'active' : ''}"
+                  onclick="loadRunDetail(${r.run_number})">
+                Run #${r.run_number}
+            </div>`
+        ).join('')}</div>`
+        : '';
+
+    // Build test results table
+    let testTableHtml = '';
+    const entries = Object.entries(actionResults);
+    if (entries.length > 0) {
+        const rows = entries.map(([name, r]) => {
+            const cls = r.success ? 'test-pass' : 'test-fail';
+            const status = r.success ? 'PASSED' : 'FAILED';
+            return `<tr><td style="font-weight:500">${esc(name)}</td><td class="${cls}">${status}</td><td>${esc(r.response_summary || r.result_summary || '')}</td></tr>`;
+        }).join('');
+        testTableHtml = `
+        <div class="section">
+            <h3>Test Results (${passedActions}/${totalActions} passed)</h3>
+            <table class="data-table">
+                <thead><tr><th>Action</th><th>Status</th><th>Summary</th></tr></thead>
+                <tbody>${rows}</tbody>
+            </table>
+        </div>`;
+    } else if (failedActions.length > 0) {
+        testTableHtml = `
+        <div class="section">
+            <h3>Failed Actions (${failedActions.length})</h3>
+            <table class="data-table">
+                <thead><tr><th>Action Name</th></tr></thead>
+                <tbody>${failedActions.map(a => `<tr><td class="test-fail">${esc(a)}</td></tr>`).join('')}</tbody>
+            </table>
+        </div>`;
+    }
+
+    // Failure analysis
+    let failureHtml = '';
+    if (failureSummary) {
+        failureHtml = `
+        <div class="section">
+            <h3>Failure Analysis (CurlTester)</h3>
+            <div class="failure-box">${esc(failureSummary)}</div>
+        </div>`;
+    }
+
+    // PR section
+    let prHtml = '';
+    if (d.pr_number) {
+        const prState = (d.pr_state || 'PR_CREATED').replace(/_/g, ' ');
+        prHtml = `
+        <div class="section">
+            <h3>Pull Request</h3>
+            <div class="pr-box">
+                <a href="${prUrl}" target="_blank">PR #${d.pr_number}</a>
+                <span class="pr-state-badge">${prState}</span>
+            </div>
+        </div>`;
+    }
+
+    // Run log
+    let logHtml = '';
+    if (runLog.length > 0) {
+        const entries = runLog.map(e => {
+            const level = (e.log_level || 'INFO').toLowerCase();
+            const time = e.timestamp ? new Date(e.timestamp).toLocaleTimeString() : '';
+            const hasDetails = e.details && e.details.length > 0;
+            return `
+            <li class="log-entry ${level}">
+                <span class="log-time">${time}</span>
+                <span class="log-message">${esc(e.message || '')}</span>
+                ${hasDetails ? `<span class="log-toggle" onclick="this.nextElementSibling.classList.toggle('show')">details</span>
+                <div class="log-details">${esc(e.details)}</div>` : ''}
+            </li>`;
+        }).join('');
+        logHtml = `
+        <div class="section">
+            <h3>Run Log (${runLog.length} entries)</h3>
+            <ul class="log-timeline">${entries}</ul>
+        </div>`;
+    }
+
+    document.getElementById('content').innerHTML = `
+        <div class="detail-header">
+            <div>
+                <div class="detail-app-name">${esc(appName)}</div>
+                <div class="detail-meta">
+                    Workflow <code>${d.workflow_id}</code> · Run #${d.run_number || currentRunNumber}
+                    ${d.created_at ? ` · Started ${new Date(d.created_at).toLocaleString()}` : ''}
+                </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px">
+                <span class="status-badge ${badgeClass}">${state.replace(/_/g, ' ')}</span>
+                ${!isActive ? `<button class="btn-primary" onclick="rerun()">Rerun</button>` : ''}
+            </div>
+        </div>
+
+        ${runSelectorHtml}
+
+        <div class="stats-grid">
+            <div class="detail-stat">
+                <div class="detail-stat-label">Endpoints Found</div>
+                <div class="detail-stat-value">${endpointsFound}</div>
+            </div>
+            <div class="detail-stat">
+                <div class="detail-stat-label">Actions Built</div>
+                <div class="detail-stat-value">${newActions.length}</div>
+            </div>
+            <div class="detail-stat">
+                <div class="detail-stat-label">Tests Passed</div>
+                <div class="detail-stat-value" style="color: ${passedActions > 0 ? 'var(--accent-green)' : 'inherit'}">${totalActions > 0 ? passedActions + '/' + totalActions : '—'}</div>
+            </div>
+            <div class="detail-stat">
+                <div class="detail-stat-label">PR Status</div>
+                <div class="detail-stat-value" style="font-size:16px">${d.pr_number ? `#${d.pr_number}` : '—'}</div>
+            </div>
+        </div>
+
+        <div class="pipeline">
+            <h3>Pipeline Progress</h3>
+            <div class="pipeline-stages">
+                ${stages.map((s, i) => {
+                    const arrow = i < stages.length - 1 ? '<div class="pipeline-arrow"></div>' : '';
+                    return `<div class="pipeline-stage">
+                        <div class="pipeline-dot ${s.status}">${s.icon}</div>
+                        <div class="pipeline-label">${s.label}</div>
+                    </div>${arrow}`;
+                }).join('')}
+            </div>
+        </div>
+
+        ${testTableHtml}
+        ${failureHtml}
+        ${prHtml}
+        ${logHtml}
+    `;
+}
+
+function getPipelineStages(state, runLog, data) {
+    const messages = runLog.map(e => (e.message || '').toLowerCase());
+    const hasMsg = (keyword) => messages.some(m => m.includes(keyword));
+
+    const stages = [
+        { label: 'Finder', icon: '1', status: 'pending' },
+        { label: 'Curl Test', icon: '2', status: 'pending' },
+        { label: 'Builder', icon: '3', status: 'pending' },
+        { label: 'Test & Fix', icon: '4', status: 'pending' },
+        { label: 'PR', icon: '5', status: 'pending' },
+    ];
+
+    // Mark stages based on run_log
+    if (hasMsg('actionfinder')) stages[0].status = hasMsg('actionfinder') && (hasMsg('actionbuilder') || hasMsg('curltester')) ? 'done' : 'active';
+    if (hasMsg('curltester')) stages[1].status = hasMsg('actionbuilder') ? 'done' : 'active';
+    if (hasMsg('actionbuilder')) stages[2].status = hasMsg('testandfix') || hasMsg('test_and_fix') || hasMsg('testfix') ? 'done' : 'active';
+    if (hasMsg('testandfix') || hasMsg('test_and_fix') || hasMsg('testfix') || hasMsg('actions passed')) {
+        stages[3].status = data.pr_number ? 'done' : 'active';
+    }
+    if (data.pr_number) stages[4].status = 'done';
+
+    // Terminal state overrides
+    if (['FAILED', 'FAILED_AUTH_ISSUE', 'TIMED_OUT', 'ABORTED', 'INFRA_EXECUTION_FAILED', 'INFRA_INITIATION_FAILED'].includes(state)) {
+        const lastActive = stages.findLastIndex(s => s.status === 'active');
+        if (lastActive >= 0) stages[lastActive].status = 'failed';
+    }
+
+    // Check marks
+    stages.forEach(s => {
+        if (s.status === 'done') s.icon = '✓';
+        else if (s.status === 'failed') s.icon = '✕';
+    });
+
+    return stages;
+}
+
+async function rerun() {
+    const appName = detailData.toolkit_name;
+    try {
+        const resp = await fetch('/api/retry', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ app_name: appName, workflow_id: workflowId })
+        });
+        const result = await resp.json();
+        if (result.success) {
+            window.location.href = `/detail?workflow_id=${result.workflow_id}&run=${result.run_number}`;
+        } else {
+            alert('Rerun failed: ' + (result.error || result.details || 'Unknown error'));
+        }
+    } catch (err) {
+        alert('Error: ' + err.message);
+    }
+}
+
+function esc(str) {
+    if (!str) return '';
+    return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+init();
+</script>
+</body>
+</html>
